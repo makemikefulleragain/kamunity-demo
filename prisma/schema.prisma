@@ -1,0 +1,286 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+  previewFeatures = ["filteredRelationCount"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String           @id @default(cuid())
+  email            String           @unique
+  name             String?
+  avatarUrl        String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  createdActions   Action[]         @relation("ActionCreator")
+  actionActivities ActionActivity[]
+  analyticsEvents  AnalyticsEvent[]
+  uploads          ContentUpload[]
+  memberships      Membership[]
+  messages         Message[]
+  reactions        Reaction[]
+}
+
+model Community {
+  id              String              @id @default(cuid())
+  name            String
+  description     String?
+  imageUrl        String?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  federationType  String              @default("cooperative")
+  minimumClubs    Int                 @default(5)
+  isActive        Boolean             @default(true)
+  governanceRules Json?
+  featuredContent String?
+  tags            String[]
+  visibility      String              @default("public")
+  clubs           Club[]
+  customReactions CommunityReaction[]
+  members         Membership[]
+
+  @@index([isActive])
+  @@index([federationType])
+}
+
+model Club {
+  id                     String       @id @default(cuid())
+  name                   String
+  description            String?
+  imageUrl               String?
+  createdAt              DateTime     @default(now())
+  updatedAt              DateTime     @updatedAt
+  status                 String       @default("active")
+  minimumRooms           Int          @default(5)
+  isEligibleForCommunity Boolean      @default(false)
+  purpose                String?
+  achievements           Json?
+  tags                   String[]
+  communityId            String
+  community              Community    @relation(fields: [communityId], references: [id])
+  rooms                  FocusRoom[]
+  members                Membership[]
+
+  @@index([status])
+  @@index([isEligibleForCommunity])
+  @@index([communityId])
+}
+
+model FocusRoom {
+  id            String          @id @default(cuid())
+  name          String
+  purpose       String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  status        String          @default("active")
+  isPrivate     Boolean         @default(false)
+  maxMembers    Int?
+  description   String?
+  tags          String[]
+  pinnedContent String?
+  lastActivity  DateTime        @default(now())
+  messageCount  Int             @default(0)
+  memberCount   Int             @default(0)
+  clubId        String
+  actions       Action[]
+  uploads       ContentUpload[]
+  conversations Conversation[]
+  club          Club            @relation(fields: [clubId], references: [id])
+  members       Membership[]
+
+  @@index([status])
+  @@index([clubId])
+  @@index([lastActivity])
+  @@index([isPrivate])
+}
+
+model NewsItem {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  author    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Conversation {
+  id          String     @id @default(cuid())
+  sourceType  String
+  sourceId    String
+  topic       String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  focusRoomId String?
+  FocusRoom   FocusRoom? @relation(fields: [focusRoomId], references: [id])
+  messages    Message[]
+
+  @@index([sourceType, sourceId])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  content        String
+  createdAt      DateTime     @default(now())
+  authorId       String
+  conversationId String
+  author         User         @relation(fields: [authorId], references: [id])
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  reactions      Reaction[]
+}
+
+model Membership {
+  id          String     @id @default(cuid())
+  role        String
+  userId      String
+  communityId String?
+  clubId      String?
+  focusRoomId String?
+  club        Club?      @relation(fields: [clubId], references: [id])
+  community   Community? @relation(fields: [communityId], references: [id])
+  FocusRoom   FocusRoom? @relation(fields: [focusRoomId], references: [id])
+  user        User       @relation(fields: [userId], references: [id])
+
+  @@unique([userId, communityId])
+  @@unique([userId, clubId])
+}
+
+model ManualSummary {
+  id              String   @id @default(cuid())
+  page            String
+  timeframe       String
+  perspective     String
+  summaryText     String
+  summaryAudioUrl String
+  createdAt       DateTime @default(now())
+
+  @@unique([page, timeframe, perspective])
+}
+
+model ContentUpload {
+  id               String     @id @default(cuid())
+  filename         String
+  originalName     String
+  fileType         String
+  fileSize         Int
+  mimeType         String
+  storageLocation  String
+  moderationStatus String     @default("pending")
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  description      String?
+  tags             String[]
+  isPublic         Boolean    @default(true)
+  uploaderId       String
+  focusRoomId      String?
+  focusRoom        FocusRoom? @relation(fields: [focusRoomId], references: [id])
+  uploader         User       @relation(fields: [uploaderId], references: [id])
+  reactions        Reaction[]
+
+  @@index([uploaderId])
+  @@index([fileType])
+  @@index([moderationStatus])
+  @@index([focusRoomId])
+  @@index([isPublic])
+}
+
+model Reaction {
+  id              String         @id @default(cuid())
+  reactionType    String
+  createdAt       DateTime       @default(now())
+  contentType     String
+  contentId       String
+  userId          String
+  messageId       String?
+  contentUploadId String?
+  ContentUpload   ContentUpload? @relation(fields: [contentUploadId], references: [id])
+  message         Message?       @relation(fields: [messageId], references: [id])
+  user            User           @relation(fields: [userId], references: [id])
+}
+
+model AnalyticsEvent {
+  id        String   @id @default(cuid())
+  eventType String
+  sessionId String
+  metadata  Json?
+  createdAt DateTime @default(now())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@index([eventType])
+  @@index([sessionId])
+  @@index([createdAt])
+}
+
+model CommunityReaction {
+  id          String    @id @default(cuid())
+  emoji       String
+  label       String
+  description String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  communityId String
+  community   Community @relation(fields: [communityId], references: [id])
+
+  @@index([communityId])
+}
+
+model Action {
+  id                  String           @id @default(cuid())
+  title               String
+  description         String
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  actionType          String
+  impactLevel         String
+  sourceType          String
+  status              String
+  statusConfig        Json?
+  priority            String           @default("medium")
+  createdBy           String
+  assignedTo          String[]
+  volunteers          String[]
+  ownershipType       String
+  isPublic            Boolean          @default(false)
+  promotedFromPrivate Boolean          @default(false)
+  sourceId            String?
+  sourceMessageId     String?
+  detectionMethod     String
+  isConfirmed         Boolean          @default(false)
+  dueDate             DateTime?
+  estimatedEffort     String?
+  requiredSkills      String[]
+  tags                String[]
+  focusRoomId         String?
+  creator             User             @relation("ActionCreator", fields: [createdBy], references: [id])
+  focusRoom           FocusRoom?       @relation(fields: [focusRoomId], references: [id])
+  activities          ActionActivity[]
+
+  @@index([actionType])
+  @@index([impactLevel])
+  @@index([sourceType])
+  @@index([status])
+  @@index([isPublic])
+  @@index([createdBy])
+  @@index([sourceId])
+  @@index([dueDate])
+}
+
+model ActionActivity {
+  id           String   @id @default(cuid())
+  actionId     String
+  userId       String
+  activityType String
+  description  String
+  metadata     Json?
+  createdAt    DateTime @default(now())
+  action       Action   @relation(fields: [actionId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id])
+
+  @@index([actionId])
+  @@index([userId])
+  @@index([activityType])
+}

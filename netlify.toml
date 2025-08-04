@@ -1,0 +1,15 @@
+[build]
+  publish = ".next"
+  command = "npm run build"
+
+[build.environment]
+  NODE_VERSION = "18"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[context.production.environment]
+  NEXT_PUBLIC_DEMO_MODE = "true"
+  NEXT_PUBLIC_MAX_CONCURRENT_USERS = "100"
