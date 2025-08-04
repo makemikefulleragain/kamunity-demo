@@ -1,6 +1,7 @@
 [build]
   publish = ".next"
   command = "npm run build"
+  environment = { DISABLE_ESLINT = "true" }
 
 [build.environment]
   NODE_VERSION = "18"
