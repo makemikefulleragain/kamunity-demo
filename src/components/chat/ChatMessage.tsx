@@ -134,7 +134,7 @@ export const ChatMessage = ({
               >
                 {author.name}
               </Text>
-              <Text size="sm" color="muted">
+              <Text variant="body-small" color="muted">
                 {new Date(createdAt).toLocaleString()}
               </Text>
               {isCurrentUser && (
