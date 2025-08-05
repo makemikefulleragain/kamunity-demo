@@ -11,7 +11,8 @@ const supabase = createClient<Database>(
 // GET /api/actions/by-source - Fetch actions by source context
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
+    // Use searchParams directly from NextRequest to avoid dynamic server usage
+    const { searchParams } = request.nextUrl
     
     const sourceType = searchParams.get('sourceType')
     const sourceId = searchParams.get('sourceId')
