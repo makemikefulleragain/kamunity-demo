@@ -178,7 +178,7 @@ const RoomGenerator: React.FC<RoomGeneratorProps> = ({ onRoomRequest }) => {
               
               <div>
                 <Heading level={4} className="mb-2">Skills Needed</Heading>
-                <Flex gap="xs" className="flex-wrap">
+                <Flex gap="sm" className="flex-wrap">
                   {selectedConcept.skillsNeeded.map((skill, index) => (
                     <Badge key={index} variant="secondary">{skill}</Badge>
                   ))}
@@ -197,7 +197,7 @@ const RoomGenerator: React.FC<RoomGeneratorProps> = ({ onRoomRequest }) => {
 
             <div>
               <Heading level={4} className="mb-2">Included Tools & Features</Heading>
-              <Flex gap="xs" className="flex-wrap">
+              <Flex gap="sm" className="flex-wrap">
                 {selectedConcept.tools.map((tool, index) => (
                   <Badge key={index} variant="outline">{tool}</Badge>
                 ))}
@@ -206,7 +206,7 @@ const RoomGenerator: React.FC<RoomGeneratorProps> = ({ onRoomRequest }) => {
 
             <div>
               <Heading level={4} className="mb-2">Tags</Heading>
-              <Flex gap="xs" className="flex-wrap">
+              <Flex gap="sm" className="flex-wrap">
                 {selectedConcept.tags.map((tag, index) => (
                   <Badge key={index} variant="default">#{tag}</Badge>
                 ))}
@@ -268,7 +268,7 @@ const RoomGenerator: React.FC<RoomGeneratorProps> = ({ onRoomRequest }) => {
 
               <div>
                 <Text variant="body-small" color="muted" className="mb-2">Skills Needed:</Text>
-                <Flex gap="xs" className="flex-wrap">
+                <Flex gap="sm" className="flex-wrap">
                   {selectedConcept.skillsNeeded.map((skill, index) => (
                     <Badge key={index} variant="secondary">{skill}</Badge>
                   ))}
