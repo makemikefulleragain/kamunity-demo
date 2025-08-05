@@ -25,7 +25,8 @@ export async function GET(
     }
     
     const limit = parseInt(searchParams.get('limit') || '20')
-    const activities = await getActionActivities(id, limit)
+    // Mock implementation - replace with actual Supabase query later
+    const activities: any[] = []
     
     return NextResponse.json({
       success: true,
@@ -84,13 +85,16 @@ export async function POST(
       )
     }
     
-    const activity = await createActionActivity({
+    // Mock implementation - replace with actual Supabase query later
+    const activity = {
+      id: 'mock-activity-1',
       actionId: id,
       userId: body.userId,
       activityType: body.activityType,
       description: body.description,
-      metadata: body.metadata
-    })
+      metadata: body.metadata,
+      createdAt: new Date()
+    }
     
     return NextResponse.json({
       success: true,

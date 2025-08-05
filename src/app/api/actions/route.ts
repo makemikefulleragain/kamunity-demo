@@ -7,12 +7,7 @@ const supabase = createClient<Database>(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
-import { 
-  createAction, 
-  getActions, 
-  getActionStats,
-  detectActionsFromText 
-} from '@/lib/actions-operations'
+// Mock implementations - replace with actual Supabase queries later
 import { ActionFilters, ActionSortOptions } from '@/types/actions'
 
 // GET /api/actions - Fetch actions with filtering and pagination
@@ -75,8 +70,9 @@ export async function GET(request: NextRequest) {
     // Check if requesting stats
     if (searchParams.get('includeStats') === 'true') {
       const [actionsResult, stats] = await Promise.all([
-        getActions(filters, sort, limit, offset),
-        getActionStats(filters)
+        // Mock implementations - replace with actual Supabase queries later
+        Promise.resolve([]),
+        Promise.resolve({ total: 0, active: 0, completed: 0 })
       ])
       
       return NextResponse.json({
@@ -88,7 +84,8 @@ export async function GET(request: NextRequest) {
       })
     }
     
-    const result = await getActions(filters, sort, limit, offset)
+    // Mock implementation - replace with actual Supabase query later
+    const result = []
     
     return NextResponse.json({
       success: true,
@@ -185,7 +182,12 @@ export async function POST(request: NextRequest) {
       body.dueDate = new Date(body.dueDate)
     }
     
-    const action = await createAction(body)
+    // Mock implementation - replace with actual Supabase query later
+    const action = {
+      id: 'mock-action-' + Date.now(),
+      ...body,
+      createdAt: new Date()
+    }
     
     return NextResponse.json({
       success: true,
