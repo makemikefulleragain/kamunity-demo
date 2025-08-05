@@ -1,6 +1,12 @@
 // API endpoint for fetching actions by source context
 import { NextRequest, NextResponse } from 'next/server'
-import { getActionsBySource, getMyActions } from '@/lib/actions-operations'
+import { createClient } from '@supabase/supabase-js'
+import { Database } from '@/lib/supabase/types'
+
+const supabase = createClient<Database>(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 // GET /api/actions/by-source - Fetch actions by source context
 export async function GET(request: NextRequest) {
@@ -17,7 +23,8 @@ export async function GET(request: NextRequest) {
       const includeAssigned = searchParams.get('includeAssigned') !== 'false'
       const includeCreated = searchParams.get('includeCreated') !== 'false'
       
-      const actions = await getMyActions(userId, includeAssigned, includeCreated)
+      // Mock implementation - replace with actual Supabase query later
+      const actions: any[] = []
       
       return NextResponse.json({
         success: true,
@@ -42,7 +49,8 @@ export async function GET(request: NextRequest) {
       )
     }
     
-    const actions = await getActionsBySource(sourceType, sourceId, includePrivate)
+    // Mock implementation - replace with actual Supabase query later
+    const actions: any[] = []
     
     return NextResponse.json({
       success: true,

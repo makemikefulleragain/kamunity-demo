@@ -1,9 +1,12 @@
 // API endpoints for Action activities
 import { NextRequest, NextResponse } from 'next/server'
-import { 
-  getActionActivities,
-  createActionActivity 
-} from '@/lib/actions-operations'
+import { createClient } from '@supabase/supabase-js'
+import { Database } from '@/lib/supabase/types'
+
+const supabase = createClient<Database>(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 // GET /api/actions/[id]/activities - Fetch action activities
 export async function GET(

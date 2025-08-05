@@ -1,6 +1,12 @@
 // API endpoint for Action promotion from private to public
 import { NextRequest, NextResponse } from 'next/server'
-import { promotePrivateAction } from '@/lib/actions-operations'
+import { createClient } from '@supabase/supabase-js'
+import { Database } from '@/lib/supabase/types'
+
+const supabase = createClient<Database>(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 // POST /api/actions/[id]/promote - Promote private action to public visibility
 export async function POST(
