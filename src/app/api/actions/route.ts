@@ -57,8 +57,8 @@ export async function GET(request: NextRequest) {
     
     // Parse sort options
     const sort: ActionSortOptions = {
-      field: (searchParams.get('sortField') as any) || 'createdAt',
-      direction: (searchParams.get('sortDirection') as any) || 'desc'
+      field: (searchParams.get('sortField') as 'createdAt' | 'updatedAt' | 'dueDate' | 'priority') || 'createdAt',
+      direction: (searchParams.get('sortDirection') as 'asc' | 'desc') || 'desc'
     }
     
     // Parse pagination

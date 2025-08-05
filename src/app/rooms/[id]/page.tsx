@@ -157,12 +157,14 @@ const FocusRoomPage: React.FC<RoomPageProps> = ({ params }) => {
       originalName: file.name,
       fileType: file.type.startsWith('image/') ? 'image' : 'document',
       fileSize: file.size,
+      mimeType: file.type,
+      storageLocation: `/uploads/${file.name}`,
+      moderationStatus: 'approved',
       createdAt: new Date(),
-      uploadedBy: {
-        id: 'current-user-id',
-        name: 'Current User',
-        avatarUrl: undefined
-      },
+      updatedAt: new Date(),
+      uploaderId: 'current-user-id',
+      tags: [],
+      isPublic: true,
       url: URL.createObjectURL(file),
       thumbnailUrl: undefined,
       description: undefined,
@@ -320,8 +322,10 @@ const FocusRoomPage: React.FC<RoomPageProps> = ({ params }) => {
           {/* Left Sidebar - AI Summary */}
           <div className="col-span-12 lg:col-span-3">
             <SummaryPanel 
-              sourceType="focusRoom"
-              sourceId={room.id}
+              onFilterChange={(timeframe, category) => {
+                // Handle filter changes for room-specific content
+                console.log('Room filter changed:', timeframe, category);
+              }}
             />
           </div>
 
@@ -350,6 +354,7 @@ const FocusRoomPage: React.FC<RoomPageProps> = ({ params }) => {
                         id={message.id}
                         content={message.content}
                         createdAt={message.createdAt}
+                        conversationId={room.id}
                         author={{
                           id: message.author?.id || 'unknown',
                           name: message.author?.name || 'Unknown',
