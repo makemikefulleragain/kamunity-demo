@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db-operations';
+import { createClient } from '@supabase/supabase-js'
+import { Database } from '@/lib/supabase/types'
+
+const supabase = createClient<Database>(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -16,12 +22,16 @@ export async function GET(request: NextRequest) {
     if (timeframe) whereClause.timeframe = timeframe;
     if (perspective) whereClause.perspective = perspective;
 
-    const summaries = await prisma.manualSummary.findMany({
-      where: whereClause,
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+    let query = supabase.from('manual_summaries').select('*').order('created_at', { ascending: false });
+    
+    if (timeframe) query = query.eq('timeframe', timeframe);
+    if (perspective) query = query.eq('perspective', perspective);
+    
+    const { data: summaries, error } = await query;
+    
+    if (error) {
+      return NextResponse.json({ error: 'Failed to fetch summaries' }, { status: 500 });
+    }
 
     return NextResponse.json(summaries);
   } catch (error) {
@@ -39,15 +49,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing required fields: page, summaryText, perspective, timeframe' }, { status: 400 });
     }
 
-    const newSummary = await prisma.manualSummary.create({
-      data: {
+    const { data: newSummary, error } = await supabase
+      .from('manual_summaries')
+      .insert({
         page,
-        summaryText,
-        summaryAudioUrl: summaryAudioUrl || '',
+        summary_text: summaryText,
+        summary_audio_url: summaryAudioUrl || '',
         perspective,
         timeframe,
-      },
-    });
+      })
+      .select()
+      .single();
+    
+    if (error) {
+      return NextResponse.json({ error: 'Failed to create summary' }, { status: 500 });
+    }
 
     return NextResponse.json(newSummary, { status: 201 });
   } catch (error) {

@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { createClient } from '@supabase/supabase-js'
+import { Database } from '@/lib/supabase/types'
 
-const prisma = new PrismaClient();
+const supabase = createClient<Database>(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 interface RoomRequest {
   name: string;
@@ -58,19 +62,24 @@ export async function POST(request: NextRequest) {
 
     // For MVP, we'll create the room immediately
     // In production, this would go through an approval process
-    const newRoom = await prisma.focusRoom.create({
-      data: {
+    const { data: newRoom, error } = await supabase
+      .from('focus_rooms')
+      .insert({
         name: roomRequest.name,
         purpose: roomRequest.purpose,
         description: roomRequest.description,
-        tags: roomRequest.tags,
         status: 'active',
-        isPrivate: false,
-        maxMembers: parseInt(roomRequest.estimatedMembers.split('-')[1]) || 15,
+        is_private: false,
+        max_members: parseInt(roomRequest.estimatedMembers.split('-')[1]) || 15,
         // For MVP, assign to a default club - this should be dynamic in production
-        clubId: 'default-club-id', // This will need to be handled properly
-      }
-    });
+        club_id: 'default-club-id', // This will need to be handled properly
+      })
+      .select()
+      .single()
+    
+    if (error) {
+      return NextResponse.json({ error: 'Failed to create room' }, { status: 500 })
+    }
 
     return NextResponse.json({
       success: true,
@@ -122,21 +131,23 @@ export async function GET(request: NextRequest) {
 
     // For MVP, we'll just return created rooms
     // In production, this would query a RoomRequest model
-    const whereClause = status === 'all' ? {} : { status };
+    let query = supabase
+      .from('focus_rooms')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1)
     
-    const rooms = await prisma.focusRoom.findMany({
-      where: whereClause,
-      orderBy: { createdAt: 'desc' },
-      take: limit,
-      skip: offset,
-      include: {
-        _count: {
-          select: { members: true }
-        }
-      }
-    });
+    if (status !== 'all') {
+      query = query.eq('status', status)
+    }
+    
+    const { data: rooms, error } = await query
+    
+    if (error) {
+      return NextResponse.json({ error: 'Failed to fetch rooms' }, { status: 500 })
+    }
 
-    const roomRequests = rooms.map(room => ({
+    const roomRequests = rooms?.map((room: any) => ({
       id: room.id,
       name: room.name,
       purpose: room.purpose,

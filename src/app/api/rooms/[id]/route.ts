@@ -1,12 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getFocusRoom, updateFocusRoom, deleteFocusRoom } from '../../../../lib/focus-room-operations'
+import { createClient } from '@supabase/supabase-js'
+import { Database } from '@/lib/supabase/types'
+
+const supabase = createClient<Database>(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const room = await getFocusRoom(params.id)
+    const { data: room, error } = await supabase
+      .from('focus_rooms')
+      .select('*')
+      .eq('id', params.id)
+      .single()
+    
+    if (error) {
+      return NextResponse.json({ error: 'Room not found' }, { status: 404 })
+    }
     
     if (!room) {
       return NextResponse.json({ error: 'Room not found' }, { status: 404 })
@@ -27,7 +41,16 @@ export async function PUT(
     const body = await request.json()
     const { name, purpose } = body
 
-    const room = await updateFocusRoom(params.id, { name, purpose })
+    const { data: room, error } = await supabase
+      .from('focus_rooms')
+      .update({ name, purpose })
+      .eq('id', params.id)
+      .select()
+      .single()
+    
+    if (error) {
+      return NextResponse.json({ error: 'Failed to update room' }, { status: 500 })
+    }
     
     return NextResponse.json(room)
   } catch (error) {
@@ -41,7 +64,14 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    await deleteFocusRoom(params.id)
+    const { error } = await supabase
+      .from('focus_rooms')
+      .delete()
+      .eq('id', params.id)
+    
+    if (error) {
+      return NextResponse.json({ error: 'Failed to delete room' }, { status: 500 })
+    }
     
     return NextResponse.json({ success: true })
   } catch (error) {

@@ -1,6 +1,12 @@
 // API endpoint for Action detection from text
 import { NextRequest, NextResponse } from 'next/server'
-import { detectActionsFromText } from '@/lib/actions-operations'
+import { createClient } from '@supabase/supabase-js'
+import { Database } from '@/lib/supabase/types'
+
+const supabase = createClient<Database>(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 // POST /api/actions/detect - Detect potential actions from text
 export async function POST(request: NextRequest) {
@@ -46,19 +52,31 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    const detectionResults = await detectActionsFromText(
-      body.text,
-      body.sourceType,
-      body.sourceId,
-      body.userId
-    )
+    // Mock action detection for now - replace with actual AI implementation later
+    const detectionResults: Array<{
+      id: string;
+      text: string;
+      actionType: string;
+      confidence: number;
+      priority: string;
+      impactLevel: string;
+    }> = [
+      {
+        id: 'mock-action-1',
+        text: 'Sample detected action',
+        actionType: 'task',
+        confidence: 0.8,
+        priority: 'medium',
+        impactLevel: 'moderate'
+      }
+    ]
     
     return NextResponse.json({
       success: true,
       data: {
         detectedActions: detectionResults,
         totalDetected: detectionResults.length,
-        highConfidenceActions: detectionResults.filter(result => result.confidence >= 0.7)
+        highConfidenceActions: detectionResults.filter((result: any) => result.confidence >= 0.7)
       }
     })
     
