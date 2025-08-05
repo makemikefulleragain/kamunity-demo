@@ -35,10 +35,10 @@ export async function GET(request: NextRequest) {
       filters.isPublic = searchParams.get('isPublic') === 'true'
     }
     if (searchParams.get('assignedToMe')) {
-      filters.assignedToMe = searchParams.get('assignedToMe')
+      filters.assignedToMe = searchParams.get('assignedToMe') === 'true'
     }
     if (searchParams.get('createdByMe')) {
-      filters.createdByMe = searchParams.get('createdByMe')
+      filters.createdByMe = searchParams.get('createdByMe') === 'true'
     }
     if (searchParams.get('tags')) {
       filters.tags = searchParams.get('tags')!.split(',')
