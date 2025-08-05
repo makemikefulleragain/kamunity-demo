@@ -157,7 +157,7 @@ const FocusRoomPage: React.FC<RoomPageProps> = ({ params }) => {
       originalName: file.name,
       fileType: file.type.startsWith('image/') ? 'image' : 'document',
       fileSize: file.size,
-      uploadedAt: new Date(),
+      createdAt: new Date(),
       uploadedBy: {
         id: 'current-user-id',
         name: 'Current User',
