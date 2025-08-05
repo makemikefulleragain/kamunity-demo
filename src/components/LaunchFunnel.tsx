@@ -93,18 +93,18 @@ const LaunchFunnel: React.FC<LaunchFunnelProps> = ({ onCreateRoom, className = '
           </Text>
         </div>
 
-        {/* Progress Indicator */}
-        <div className="flex justify-center mb-12">
-          <div className="flex items-center space-x-4">
+        {/* Progress Indicator - Responsive Layout */}
+        <div className="flex justify-center mb-12 px-4">
+          <div className="flex items-center space-x-2 sm:space-x-4 max-w-full overflow-x-auto">
             {funnelSteps.map((step, index) => (
-              <div key={step.id} className="flex items-center">
+              <div key={step.id} className="flex items-center flex-shrink-0">
                 <div 
                   className={`
-                    w-12 h-12 rounded-full flex items-center justify-center text-lg font-semibold transition-all duration-300
+                    w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-sm sm:text-lg font-semibold transition-all duration-300
                     ${step.isCompleted 
                       ? 'bg-success-500 text-white' 
                       : step.isActive 
-                        ? 'bg-primary-500 text-white ring-4 ring-primary-200' 
+                        ? 'bg-primary-500 text-white ring-2 sm:ring-4 ring-primary-200' 
                         : 'bg-neutral-200 text-neutral-500'
                     }
                   `}
@@ -114,7 +114,7 @@ const LaunchFunnel: React.FC<LaunchFunnelProps> = ({ onCreateRoom, className = '
                 {index < funnelSteps.length - 1 && (
                   <div 
                     className={`
-                      w-16 h-1 mx-2 transition-all duration-300
+                      w-8 sm:w-16 h-1 mx-1 sm:mx-2 transition-all duration-300 flex-shrink-0
                       ${step.isCompleted ? 'bg-success-500' : 'bg-neutral-200'}
                     `}
                   />

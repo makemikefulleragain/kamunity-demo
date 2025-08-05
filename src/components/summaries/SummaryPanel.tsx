@@ -133,15 +133,15 @@ const SummaryPanel: React.FC<SummaryPanelProps> = ({ onFilterChange }) => {
           
           {/* Top Left - Filters */}
           <div className="order-1">
-            {/* Filter Layout: Left Column (FEATURED) + Right Side (Timeline + Perspective) */}
-            <div className="flex gap-3 mb-4">
-              {/* Left Column - FEATURED Button (matches 2-row height) */}
+            {/* Filter Layout: Mobile Stack, Desktop Side-by-Side */}
+            <div className="flex flex-col sm:flex-row gap-3 mb-4">
+              {/* FEATURED Button - Full width on mobile, fixed width on desktop */}
               <div className="flex flex-col justify-center">
                 <button
                   onClick={() => handleCategoryChange('FEATURED')}
                   className={cn(
-                    'px-4 py-6 text-sm font-bold rounded-lg transition-colors flex items-center justify-center',
-                    'h-[76px] w-[100px]', // Fixed height to match two rows + gap
+                    'px-4 py-3 sm:py-6 text-sm font-bold rounded-lg transition-colors flex items-center justify-center',
+                    'w-full sm:h-[76px] sm:w-[100px]', // Responsive sizing
                     selectedCategory === 'FEATURED'
                       ? 'bg-orange-500 text-white shadow-lg'
                       : 'bg-orange-100 text-orange-700 hover:bg-orange-200'
@@ -151,10 +151,10 @@ const SummaryPanel: React.FC<SummaryPanelProps> = ({ onFilterChange }) => {
                 </button>
               </div>
               
-              {/* Right Side - Two Rows */}
+              {/* Right Side - Two Rows, Stack on Mobile */}
               <div className="flex-1 flex flex-col gap-2">
                 {/* Top Row - Timeline Buttons */}
-                <div className="flex flex-wrap gap-2 h-[36px] items-center">
+                <div className="flex flex-wrap gap-1 sm:gap-2 min-h-[36px] items-center">
                   {timeframes.map((timeframe) => {
                     // Timeline buttons: only show colors when FEATURED is not active
                     const getTimeframeColor = (tf: string) => {
@@ -182,7 +182,7 @@ const SummaryPanel: React.FC<SummaryPanelProps> = ({ onFilterChange }) => {
                         key={timeframe}
                         onClick={() => handleTimeframeChange(timeframe)}
                         className={cn(
-                          'px-3 py-2 text-xs font-medium rounded-md transition-colors',
+                          'px-2 sm:px-3 py-1 sm:py-2 text-xs font-medium rounded-md transition-colors whitespace-nowrap',
                           getTimeframeColor(timeframe)
                         )}
                       >
@@ -193,7 +193,7 @@ const SummaryPanel: React.FC<SummaryPanelProps> = ({ onFilterChange }) => {
                 </div>
                 
                 {/* Bottom Row - Perspective Buttons */}
-                <div className="flex flex-wrap gap-1 h-[36px] items-center">
+                <div className="flex flex-wrap gap-1 min-h-[36px] items-center">
                   {categories.filter(cat => cat !== 'FEATURED').map((category) => {
                     // Perspective buttons: only show colors when FEATURED is not active
                     const getPerspectiveColor = (cat: string) => {
@@ -232,7 +232,7 @@ const SummaryPanel: React.FC<SummaryPanelProps> = ({ onFilterChange }) => {
                         key={category}
                         onClick={() => handleCategoryChange(category)}
                         className={cn(
-                          'px-2 py-1 text-xs font-medium rounded-md transition-colors',
+                          'px-2 py-1 text-xs font-medium rounded-md transition-colors whitespace-nowrap flex-shrink-0',
                           getPerspectiveColor(category)
                         )}
                       >
