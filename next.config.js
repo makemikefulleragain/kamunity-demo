@@ -8,12 +8,6 @@ const nextConfig = {
     // Keep TypeScript checking enabled but don't fail on warnings
     ignoreBuildErrors: false,
   },
-  // Optimize for production deployment
-  output: 'standalone',
-  experimental: {
-    // Enable app directory features
-    appDir: true,
-  },
 }
 
 module.exports = nextConfig

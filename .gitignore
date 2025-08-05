@@ -3,3 +3,6 @@ node_modules
 .env
 
 /src/generated/prisma
+
+# Archive directory (reference material, not part of live site)
+archive/
