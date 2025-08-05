@@ -176,10 +176,10 @@ export const ChatMessage = ({
                       {getFileIcon(upload.fileType)}
                     </span>
                     <div className="flex-1 min-w-0">
-                      <Text size="sm" className="text-neutral-700 truncate">
+                      <Text variant="body-small" className="text-neutral-700 truncate">
                         {upload.filename}
                       </Text>
-                      <Text size="xs" color="muted">
+                      <Text variant="caption" color="muted">
                         {formatFileSize(upload.filename)}
                       </Text>
                     </div>
@@ -266,24 +266,24 @@ export const ChatMessageCompact = ({
     <div className={cn('p-3 hover:bg-neutral-50 transition-colors', className)}>
       <Flex align="start" gap="sm">
         <div className="w-6 h-6 bg-neutral-100 rounded-full flex items-center justify-center flex-shrink-0">
-          <Text size="xs" className="text-neutral-600">
+          <Text variant="caption" className="text-neutral-600">
             {author.name.charAt(0)}
           </Text>
         </div>
         <div className="flex-1 min-w-0">
           <Flex align="center" className="mb-1">
-            <Text size="sm" weight="medium" className="text-neutral-900 mr-2">
+            <Text variant="body-small" weight="medium" className="text-neutral-900 mr-2">
               {author.name}
             </Text>
-            <Text size="xs" color="muted">
+            <Text variant="caption" color="muted">
               {new Date(createdAt).toLocaleTimeString()}
             </Text>
           </Flex>
-          <Text size="sm" className="text-neutral-700 line-clamp-2">
+          <Text variant="body-small" className="text-neutral-700 line-clamp-2">
             {content}
           </Text>
           {reactionCount > 0 && (
-            <Text size="xs" color="muted" className="mt-1">
+            <Text variant="caption" color="muted" className="mt-1">
               {reactionCount} reaction{reactionCount !== 1 ? 's' : ''}
             </Text>
           )}
