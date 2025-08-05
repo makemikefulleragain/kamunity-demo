@@ -164,11 +164,7 @@ const FocusRoomPage: React.FC<RoomPageProps> = ({ params }) => {
       updatedAt: new Date(),
       uploaderId: 'current-user-id',
       tags: [],
-      isPublic: true,
-      url: URL.createObjectURL(file),
-      thumbnailUrl: undefined,
-      description: undefined,
-      tags: []
+      isPublic: true
     };
     
     setRoom(prev => prev ? {
