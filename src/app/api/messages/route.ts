@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { createClient } from '@supabase/supabase-js'
 
-const prisma = new PrismaClient()
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,20 +19,22 @@ export async function POST(request: NextRequest) {
     }
 
     // Create the message
-    const message = await prisma.message.create({
-      data: {
+    const { data: message, error } = await supabase
+      .from('messages')
+      .insert({
         content,
-        conversationId,
-        userId,
-        authorName: authorName || 'Anonymous'
-      }
-    })
+        room_id: conversationId,
+        user_id: userId
+      })
+      .select()
+      .single()
 
-    // Update conversation's last activity
-    await prisma.conversation.update({
-      where: { id: conversationId },
-      data: { updatedAt: new Date() }
-    })
+    if (error) {
+      return NextResponse.json({ error: 'Failed to create message' }, { status: 500 })
+    }
+
+    // Update room's last activity (rooms table doesn't have updatedAt field)
+    // This would be handled by database triggers if needed
 
     return NextResponse.json({
       success: true,
@@ -63,17 +68,17 @@ export async function GET(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Get messages for the conversation
-    const messages = await prisma.message.findMany({
-      where: {
-        conversationId
-      },
-      orderBy: {
-        createdAt: 'asc'
-      },
-      skip: offset,
-      take: limit
-    })
+    // Get messages for the room
+    const { data: messages, error } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('room_id', conversationId)
+      .order('created_at', { ascending: true })
+      .range(offset, offset + limit - 1)
+
+    if (error) {
+      return NextResponse.json({ error: 'Failed to fetch messages' }, { status: 500 })
+    }
 
     return NextResponse.json({
       messages,
