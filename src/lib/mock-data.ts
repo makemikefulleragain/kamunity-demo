@@ -52,7 +52,10 @@ export const mockCommunities: MockCommunity[] = [
     createdAt: new Date(),
     updatedAt: new Date(),
     clubs: [],
-    members: mockUsers.slice(0, 2),
+    members: [
+      { id: '1', userId: '1', role: 'admin', joinedAt: new Date() },
+      { id: '2', userId: '2', role: 'member', joinedAt: new Date() }
+    ],
   },
 ];
 
@@ -72,7 +75,10 @@ export const mockClubs: MockClub[] = [
     createdAt: new Date(),
     updatedAt: new Date(),
     rooms: [],
-    members: mockUsers.slice(0, 2),
+    members: [
+      { id: '1', userId: '1', role: 'admin', joinedAt: new Date() },
+      { id: '2', userId: '2', role: 'member', joinedAt: new Date() }
+    ],
     community: mockCommunities[0],
   },
   {
@@ -120,7 +126,7 @@ export const mockFocusRooms: MockFocusRoom[] = [
   },
   {
     id: 'room-2',
-    name: 'Rooftop Garden Planning',
+    title: 'Community garden planning',
     purpose: 'Coordinate the logistics for the new rooftop garden at the community center.',
     status: 'active',
     isPrivate: false,
@@ -152,18 +158,18 @@ export const mockConversations: MockConversation[] = [
         createdAt: new Date(),
         updatedAt: new Date(),
         focusRoomId: 'room-1',
-        FocusRoom: mockFocusRooms[0],
+        focusRoom: mockFocusRooms[0],
         messages: [],
     },
     {
         id: 'convo-2',
         sourceType: 'FocusRoom',
         sourceId: 'room-2',
-        topic: 'Volunteer coordination for Saturday',
+        title: 'Volunteer coordination for Saturday',
         createdAt: new Date(),
         updatedAt: new Date(),
         focusRoomId: 'room-2',
-        FocusRoom: mockFocusRooms[1],
+        focusRoom: mockFocusRooms[1],
         messages: [],
     }
 ];
