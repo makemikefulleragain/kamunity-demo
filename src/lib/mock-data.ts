@@ -1,4 +1,4 @@
-import { Community, Club, FocusRoom, User, Conversation, Message } from '@prisma/client';
+import { Community, Club, FocusRoom, User, Conversation, Message } from '@/types/communities';
 
 // Extending with relations for easy mocking
 export type MockUser = User;

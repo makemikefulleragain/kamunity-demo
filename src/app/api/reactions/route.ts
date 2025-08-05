@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { createClient } from '@supabase/supabase-js'
+import { Database } from '@/lib/supabase/types'
 
-const prisma = new PrismaClient()
+const supabase = createClient<Database>(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 // Kamunity vibe check reactions
 const ALLOWED_REACTIONS = [
@@ -33,20 +37,20 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user already reacted to this content
-    const existingReaction = await prisma.reaction.findFirst({
-      where: {
-        userId,
-        contentId,
-        contentType
-      }
-    })
+    const { data: existingReaction } = await supabase
+      .from('reactions')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('content_id', contentId)
+      .eq('content_type', contentType)
+      .single()
 
     let reaction
 
     if (existingReaction) {
       if (existingReaction.reactionType === reactionType) {
         // Remove reaction if same type
-        await prisma.reaction.delete({
+        await supabase.reaction.delete({
           where: { id: existingReaction.id }
         })
         
@@ -57,7 +61,7 @@ export async function POST(request: NextRequest) {
         })
       } else {
         // Update reaction if different type
-        reaction = await prisma.reaction.update({
+        reaction = await supabase.reaction.update({
           where: { id: existingReaction.id },
           data: { reactionType },
           include: {
@@ -69,7 +73,7 @@ export async function POST(request: NextRequest) {
       }
     } else {
       // Create new reaction
-      reaction = await prisma.reaction.create({
+      reaction = await supabase.reaction.create({
         data: {
           userId,
           contentId,
@@ -116,7 +120,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get all reactions for the content
-    const reactions = await prisma.reaction.findMany({
+    const reactions = await supabase.reaction.findMany({
       where: {
         contentId,
         contentType
