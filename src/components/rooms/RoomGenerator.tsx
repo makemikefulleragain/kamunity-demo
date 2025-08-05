@@ -315,7 +315,6 @@ const RoomGenerator: React.FC<RoomGeneratorProps> = ({ onRoomRequest }) => {
               <Select
                 value={selectedCategory}
                 onValueChange={setSelectedCategory}
-                placeholder="Select a category (optional)"
               >
                 {ROOM_CATEGORIES.map((category) => (
                   <option key={category} value={category}>{category}</option>

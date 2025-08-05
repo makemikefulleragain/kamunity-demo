@@ -50,9 +50,10 @@ export async function POST(request: NextRequest) {
     if (existingReaction) {
       if (existingReaction.reactionType === reactionType) {
         // Remove reaction if same type
-        await supabase.reaction.delete({
-          where: { id: existingReaction.id }
-        })
+        await supabase
+          .from('reactions')
+          .delete()
+          .eq('id', existingReaction.id)
         
         return NextResponse.json({ 
           success: true, 
@@ -61,31 +62,29 @@ export async function POST(request: NextRequest) {
         })
       } else {
         // Update reaction if different type
-        reaction = await supabase.reaction.update({
-          where: { id: existingReaction.id },
-          data: { reactionType },
-          include: {
-            user: {
-              select: { id: true, name: true }
-            }
-          }
-        })
+        const { data: updatedReaction } = await supabase
+          .from('reactions')
+          .update({ reaction_type: reactionType })
+          .eq('id', existingReaction.id)
+          .select()
+          .single()
+        
+        reaction = updatedReaction
       }
     } else {
       // Create new reaction
-      reaction = await supabase.reaction.create({
-        data: {
-          userId,
-          contentId,
-          contentType,
-          reactionType
-        },
-        include: {
-          user: {
-            select: { id: true, name: true }
-          }
-        }
-      })
+      const { data: newReaction } = await supabase
+        .from('reactions')
+        .insert({
+          user_id: userId,
+          content_id: contentId,
+          content_type: contentType,
+          reaction_type: reactionType
+        })
+        .select()
+        .single()
+      
+      reaction = newReaction
     }
 
     return NextResponse.json({
@@ -120,31 +119,23 @@ export async function GET(request: NextRequest) {
     }
 
     // Get all reactions for the content
-    const reactions = await supabase.reaction.findMany({
-      where: {
-        contentId,
-        contentType
-      },
-      include: {
-        user: {
-          select: { id: true, name: true }
-        }
-      },
-      orderBy: {
-        createdAt: 'desc'
-      }
-    })
+    const { data: reactions } = await supabase
+      .from('reactions')
+      .select('*, user:users(id, name)')
+      .eq('content_id', contentId)
+      .eq('content_type', contentType)
+      .order('created_at', { ascending: false })
 
     // Group reactions by type with counts
     const reactionCounts = ALLOWED_REACTIONS.reduce((acc, type) => {
-      acc[type] = reactions.filter(r => r.reactionType === type).length
+      acc[type] = (reactions || []).filter((r: any) => r.reaction_type === type).length
       return acc
     }, {} as Record<string, number>)
 
     return NextResponse.json({
-      reactions,
+      reactions: reactions || [],
       counts: reactionCounts,
-      total: reactions.length
+      total: (reactions || []).length
     })
 
   } catch (error) {

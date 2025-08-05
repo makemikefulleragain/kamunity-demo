@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
     }
     
     // Mock implementation - replace with actual Supabase query later
-    const result = []
+    const result: any[] = []
     
     return NextResponse.json({
       success: true,

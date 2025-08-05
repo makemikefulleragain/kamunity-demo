@@ -53,8 +53,8 @@ export const mockCommunities: MockCommunity[] = [
     updatedAt: new Date(),
     clubs: [],
     members: [
-      { id: '1', userId: '1', role: 'admin', joinedAt: new Date() },
-      { id: '2', userId: '2', role: 'member', joinedAt: new Date() }
+      { id: '1', userId: '1', role: 'admin', createdAt: new Date(), email: 'admin@example.com', updatedAt: new Date() },
+      { id: '2', userId: '2', role: 'member', createdAt: new Date(), email: 'member@example.com', updatedAt: new Date() }
     ],
   },
 ];
@@ -72,12 +72,14 @@ export const mockClubs: MockClub[] = [
     achievements: { projects_completed: 5 },
     tags: ['renewable-energy', 'solar', 'wind', 'policy'],
     communityId: 'comm-1',
+    memberCount: 2,
+    roomCount: 0,
     createdAt: new Date(),
     updatedAt: new Date(),
     rooms: [],
     members: [
-      { id: '1', userId: '1', role: 'admin', joinedAt: new Date() },
-      { id: '2', userId: '2', role: 'member', joinedAt: new Date() }
+      { id: '1', userId: '1', role: 'admin', createdAt: new Date(), email: 'admin@example.com', updatedAt: new Date() },
+      { id: '2', userId: '2', role: 'member', createdAt: new Date(), email: 'member@example.com', updatedAt: new Date() }
     ],
     community: mockCommunities[0],
   },
@@ -93,10 +95,15 @@ export const mockClubs: MockClub[] = [
     achievements: { gardens_created: 12 },
     tags: ['urban-farming', 'food-security', 'local-food'],
     communityId: 'comm-1',
+    memberCount: 2,
+    roomCount: 0,
     createdAt: new Date(),
     updatedAt: new Date(),
     rooms: [],
-    members: mockUsers.slice(2, 4),
+    members: [
+      { id: '3', userId: '3', role: 'admin', createdAt: new Date(), email: 'admin3@example.com', updatedAt: new Date() },
+      { id: '4', userId: '4', role: 'member', createdAt: new Date(), email: 'member4@example.com', updatedAt: new Date() }
+    ],
     community: mockCommunities[0],
   },
 ];
@@ -120,13 +127,15 @@ export const mockFocusRooms: MockFocusRoom[] = [
     clubId: 'club-1',
     createdAt: new Date(),
     updatedAt: new Date(),
-    members: mockUsers.slice(0, 1),
+    members: [
+      { id: '5', userId: '5', role: 'admin', createdAt: new Date(), email: 'admin5@example.com', updatedAt: new Date() }
+    ],
     club: mockClubs[0],
     conversations: [],
   },
   {
     id: 'room-2',
-    title: 'Community garden planning',
+    name: 'Community garden planning',
     purpose: 'Coordinate the logistics for the new rooftop garden at the community center.',
     status: 'active',
     isPrivate: false,
@@ -140,7 +149,9 @@ export const mockFocusRooms: MockFocusRoom[] = [
     clubId: 'club-2',
     createdAt: new Date(),
     updatedAt: new Date(),
-    members: mockUsers.slice(2, 3),
+    members: [
+      { id: '6', userId: '6', role: 'admin', createdAt: new Date(), email: 'admin6@example.com', updatedAt: new Date() }
+    ],
     club: mockClubs[1],
     conversations: [],
   },
@@ -154,12 +165,11 @@ export const mockConversations: MockConversation[] = [
         id: 'convo-1',
         sourceType: 'FocusRoom',
         sourceId: 'room-1',
-        topic: 'Discussion on Policy Draft v2.3',
+        title: 'Discussion on Policy Draft v2.3',
         createdAt: new Date(),
         updatedAt: new Date(),
-        focusRoomId: 'room-1',
-        focusRoom: mockFocusRooms[0],
         messages: [],
+        FocusRoom: mockFocusRooms[0],
     },
     {
         id: 'convo-2',
@@ -168,9 +178,8 @@ export const mockConversations: MockConversation[] = [
         title: 'Volunteer coordination for Saturday',
         createdAt: new Date(),
         updatedAt: new Date(),
-        focusRoomId: 'room-2',
-        focusRoom: mockFocusRooms[1],
         messages: [],
+        FocusRoom: mockFocusRooms[1],
     }
 ];
 
