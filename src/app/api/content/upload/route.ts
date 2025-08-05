@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
 
 // File type validation
 const ALLOWED_TYPES = {
@@ -62,34 +59,15 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes)
     await writeFile(filepath, buffer)
 
-    // Save to database
-    const upload = await prisma.contentUpload.create({
-      data: {
-        filename: file.name,
-        storedFilename: filename,
-        fileType: getFileType(file.type),
-        fileSize: file.size,
-        mimeType: file.type,
-        uploaderId: userId,
-        focusRoomId: roomId,
-        storageLocation: `/uploads/${roomId}/${filename}`
-      },
-      include: {
-        uploader: true,
-        reactions: true
-      }
-    })
-
+    // Return success response
     return NextResponse.json({
       success: true,
       upload: {
-        id: upload.id,
-        filename: upload.filename,
-        fileType: upload.fileType,
-        fileSize: upload.fileSize,
-        uploadedAt: upload.uploadedAt,
-        url: upload.storageLocation,
-        uploader: upload.uploader
+        filename: file.name,
+        fileType: getFileType(file.type),
+        fileSize: file.size,
+        storageLocation: `/uploads/${roomId}/${filename}`,
+        uploadedAt: new Date().toISOString()
       }
     })
 
