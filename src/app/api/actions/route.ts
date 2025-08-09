@@ -1,14 +1,16 @@
-// API endpoints for Actions CRUD operations
+// API endpoint for Actions management
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-import { Database } from '@/lib/supabase/types'
+// import { createClient } from '@supabase/supabase-js'
+// import { Database } from '@/lib/supabase/types'
 
-const supabase = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+// TODO: Implement actual Supabase integration
+// const supabase = createClient<Database>(
+//   process.env.NEXT_PUBLIC_SUPABASE_URL!,
+//   process.env.SUPABASE_SERVICE_ROLE_KEY!
+// )
 // Mock implementations - replace with actual Supabase queries later
-import { ActionFilters, ActionSortOptions } from '@/types/actions'
+import { ActionFilters } from '@/types/actions'
+// import { ActionSortOptions } from '@/types/actions' // TODO: Use when implementing sorting
 
 // GET /api/actions - Fetch actions with filtering and pagination
 export async function GET(request: NextRequest) {
@@ -57,15 +59,15 @@ export async function GET(request: NextRequest) {
       filters.dueDate = { ...filters.dueDate, to: new Date(searchParams.get('dueDateTo')!) }
     }
     
-    // Parse sort options
-    const sort: ActionSortOptions = {
-      field: (searchParams.get('sortField') as 'createdAt' | 'updatedAt' | 'dueDate' | 'priority') || 'createdAt',
-      direction: (searchParams.get('sortDirection') as 'asc' | 'desc') || 'desc'
-    }
+    // Parse sort options (TODO: Implement when needed)
+    // const sort: ActionSortOptions = {
+    //   field: (searchParams.get('sortField') as 'createdAt' | 'updatedAt' | 'dueDate' | 'priority') || 'createdAt',
+    //   direction: (searchParams.get('sortDirection') as 'asc' | 'desc') || 'desc'
+    // }
     
-    // Parse pagination
-    const limit = parseInt(searchParams.get('limit') || '50')
-    const offset = parseInt(searchParams.get('offset') || '0')
+    // Parse pagination (TODO: Implement when needed)
+    // // const limit = parseInt(searchParams.get('limit') || '50')
+    // // const offset = parseInt(searchParams.get('offset') || '0')
     
     // Check if requesting stats
     if (searchParams.get('includeStats') === 'true') {
@@ -85,7 +87,7 @@ export async function GET(request: NextRequest) {
     }
     
     // Mock implementation - replace with actual Supabase query later
-    const result: any[] = []
+    const result: unknown[] = []
     
     return NextResponse.json({
       success: true,

@@ -1,12 +1,13 @@
 // API endpoints for individual Action operations
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-import { Database } from '@/lib/supabase/types'
+// import { createClient } from '@supabase/supabase-js'
+// import { Database } from '@/lib/supabase/types'
 
-const supabase = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+// TODO: Implement actual Supabase integration
+// const supabase = createClient<Database>(
+//   process.env.NEXT_PUBLIC_SUPABASE_URL!,
+//   process.env.SUPABASE_SERVICE_ROLE_KEY!
+// )
 
 // GET /api/actions/[id] - Fetch specific action
 export async function GET(

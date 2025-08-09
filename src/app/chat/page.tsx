@@ -20,28 +20,32 @@ import Link from 'next/link';
 import KaiCharacter from '@/components/KaiCharacter';
 import SummaryPanel from '@/components/summaries/SummaryPanel';
 
-interface Conversation {
+interface ChatRoom {
   id: string;
-  topic: string | null;
-  updatedAt: string;
+  name: string;
+  description: string | null;
+  emoji_theme: string;
+  current_participants: number;
+  max_participants: number;
+  is_active: boolean;
   messageCount: number;
-  lastMessage: string;
+  lastActivity: string;
 }
 
 export default function ChatHubPage() {
-  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function fetchConversations() {
+    const fetchChatRooms = async () => {
       try {
-        const response = await fetch('/api/conversations');
+        const response = await fetch('/api/rooms/chat');
         if (!response.ok) {
-          throw new Error('Failed to fetch conversations');
+          throw new Error('Failed to fetch chat rooms');
         }
         const data = await response.json();
-        setConversations(data);
+        setChatRooms(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
@@ -49,7 +53,7 @@ export default function ChatHubPage() {
       }
     }
 
-    fetchConversations();
+    fetchChatRooms();
   }, []);
 
   if (loading) {
@@ -128,7 +132,7 @@ export default function ChatHubPage() {
         {/* Loading Content */}
         <Section spacing="lg">
           <Container>
-            <div className="text-center p-10">Loading conversations...</div>
+            <div className="text-center p-10">Loading chat rooms...</div>
           </Container>
         </Section>
       </>
@@ -216,90 +220,77 @@ export default function ChatHubPage() {
       {/* Main Content */}
       <Section spacing="lg">
         <Container>
-
-        {/* Conversations Grid */}
-        <div className="grid gap-6">
-          {error ? (
-            <div className="text-center p-10">
-              <Text color="error" className="mb-4">Unable to load conversations right now</Text>
-              <Text variant="body-small" color="muted">Please try refreshing the page or check back later</Text>
+          {loading ? (
+            <div className="text-center py-8">
+              <Text>Loading chat rooms...</Text>
             </div>
-          ) : conversations.length > 0 ? (
-            conversations.map(conv => (
-              <Card key={conv.id} className="hover:shadow-lg transition-shadow duration-300">
-                <CardHeader>
-                  <Flex justify="between" align="start">
-                    <div>
-                      <CardTitle className="text-xl font-semibold">
-                        {conv.topic || 'Untitled Conversation'}
-                      </CardTitle>
-                      <CardDescription className="mt-1">
-                        Last activity: {formatDistanceToNow(new Date(conv.updatedAt), { addSuffix: true })}
-                      </CardDescription>
-                    </div>
-                    <Badge variant="secondary">{conv.messageCount} messages</Badge>
-                  </Flex>
-                </CardHeader>
-                <CardContent>
-                  <Text className="mb-4 line-clamp-2">
-                    <strong>Latest:</strong> {conv.lastMessage}
-                  </Text>
-                  
-                  {/* Action Buttons */}
-                  <Flex gap="sm" className="flex-wrap">
-                    <Button variant="outline" size="sm">
-                      Join Chat
-                    </Button>
-                    <Button 
-                      variant="primary" 
-                      size="sm"
-                      onClick={() => handlePromoteToRoom(conv.id, conv.topic || 'Untitled')}
-                    >
-                      🎯 Promote to Room
-                    </Button>
-                  </Flex>
-                </CardContent>
-              </Card>
-            ))
+          ) : error ? (
+            <div className="text-center py-8">
+              <Text className="text-red-600">Error: {error}</Text>
+            </div>
+          ) : chatRooms.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="mb-6">
+                <span className="text-6xl">💬</span>
+              </div>
+              <Heading level={2} className="text-2xl mb-4">
+                No active chats yet
+              </Heading>
+              <Text className="text-gray-600 mb-8">
+                Chat rooms will appear here as conversations become active
+              </Text>
+              <div className="bg-blue-50 p-4 rounded-lg max-w-md mx-auto">
+                <Text className="text-sm text-blue-800">
+                  💡 <strong>Demo Tip:</strong> We can seed some sample chats to demonstrate the promotion feature!
+                </Text>
+              </div>
+            </div>
           ) : (
-            <KaiCharacter
-              variant="card"
-              expression="encouraging"
-              size="lg"
-              title="Ready to Connect?"
-              message="This is where great conversations begin! Start chatting with community members, share your ideas, and discover topics that could spark amazing collaborative projects."
-              actionButton={{
-                text: "💬 Start Your First Chat",
-                onClick: () => console.log('Start new chat'),
-                variant: 'primary'
-              }}
-            />
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {chatRooms.map((room) => (
+                <Card key={room.id} className="hover:shadow-lg transition-shadow">
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-2xl">{room.emoji_theme}</span>
+                          <Heading level={3} className="text-lg font-semibold">
+                            {room.name}
+                          </Heading>
+                        </div>
+                        <Text className="text-sm text-gray-600 mb-3">
+                          {room.description}
+                        </Text>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
+                      <span>
+                        👥 {room.current_participants}/{room.max_participants} members
+                      </span>
+                      <span>
+                        💬 {room.messageCount} messages
+                      </span>
+                    </div>
+                    
+                    {room.messageCount >= 10 && (
+                      <div className="mb-3">
+                        <Badge className="bg-green-100 text-green-800 text-xs">
+                          🚀 Ready for Room Promotion
+                        </Badge>
+                      </div>
+                    )}
+                    
+                    <Link href={`/chat/${room.id}`}>
+                      <Button className="w-full">
+                        Join Chat
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           )}
-        </div>
-
-        {/* Call to Action */}
-        <Card className="mt-12 bg-gradient-to-r from-primary-50 to-secondary-50 border-primary-200">
-          <CardContent className="p-8 text-center">
-            <Heading level={3} className="mb-4 text-primary-700">
-              Ready to Create Impact?
-            </Heading>
-            <Text className="mb-6 max-w-xl mx-auto">
-              Found a conversation that could become something bigger? Promote it to a Focus Room and start organizing collaborative action.
-            </Text>
-            <Flex gap="md" justify="center" className="flex-col sm:flex-row">
-              <Link href="/rooms/generate">
-                <Button variant="primary" size="lg">
-                  Create New Room
-                </Button>
-              </Link>
-              <Link href="/news">
-                <Button variant="outline" size="lg">
-                  Discover More Topics
-                </Button>
-              </Link>
-            </Flex>
-          </CardContent>
-        </Card>
         </Container>
       </Section>
     </>

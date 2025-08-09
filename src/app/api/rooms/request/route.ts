@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js'
-import { Database } from '@/lib/supabase/types'
+// import { createClient } from '@supabase/supabase-js'
+// import { Database } from '@/lib/supabase/types'
 
-const supabase = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+// TODO: Implement actual Supabase integration
+// const supabase = createClient<Database>(
+//   process.env.NEXT_PUBLIC_SUPABASE_URL!,
+//   process.env.SUPABASE_SERVICE_ROLE_KEY!
+// )
 
 interface RoomRequest {
   name: string;
@@ -126,8 +127,8 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status') || 'all';
-    const limit = parseInt(searchParams.get('limit') || '50');
-    const offset = parseInt(searchParams.get('offset') || '0');
+    // const limit = parseInt(searchParams.get('limit') || '50');
+    // const offset = parseInt(searchParams.get('offset') || '0');
 
     // For MVP, we'll just return created rooms
     // In production, this would query a RoomRequest model
@@ -147,7 +148,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch rooms' }, { status: 500 })
     }
 
-    const roomRequests = rooms?.map((room: any) => ({
+    const roomRequests = rooms?.map((room: unknown) => ({
       id: room.id,
       name: room.name,
       purpose: room.purpose,

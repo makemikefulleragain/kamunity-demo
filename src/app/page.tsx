@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Container, 
   Section, 
@@ -11,12 +11,23 @@ import {
   Card,
   CardContent
 } from '@/components/ui';
-import CreateRoomModal from '@/components/CreateRoomModal';
+import UnifiedRoomGenerator from '@/components/rooms/UnifiedRoomGenerator';
+import ComprehensiveFocusRoomGenerator from '@/components/rooms/ComprehensiveFocusRoomGenerator';
 import LaunchFunnel from '@/components/LaunchFunnel';
+import { EnhancedRoomGenerator } from '@/components/demo/EnhancedRoomGenerator';
+import { trackPageView, trackButtonClick } from '@/lib/demo/analytics';
 import Link from 'next/link';
 
 const HomePage = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showRoomGenerator, setShowRoomGenerator] = useState(false);
+  const [showGeneratorChoice, setShowGeneratorChoice] = useState(false);
+  const [selectedGenerator, setSelectedGenerator] = useState<'unified' | 'comprehensive' | null>(null);
+  const [showEnhancedGenerator, setShowEnhancedGenerator] = useState(false);
+
+  // Track homepage view for demo analytics
+  useEffect(() => {
+    trackPageView('homepage');
+  }, []);
   
   return (
     <>
@@ -68,6 +79,7 @@ const HomePage = () => {
                   variant="outline" 
                   size="lg" 
                   className="bg-white/10 border-white/30 text-white hover:bg-white/20 backdrop-blur-sm"
+                  onClick={() => trackButtonClick('news_browse', 'homepage')}
                 >
                   📰 The News
                 </Button>
@@ -75,7 +87,10 @@ const HomePage = () => {
               <Button
                 variant="primary"
                 size="lg"
-                onClick={() => setIsModalOpen(true)}
+                onClick={() => {
+                  trackButtonClick('get_started', 'homepage');
+                  setShowEnhancedGenerator(true);
+                }}
                 className="bg-white text-primary-600 hover:bg-white/90 shadow-lg"
               >
                 🎉 Get Started
@@ -224,7 +239,7 @@ const HomePage = () => {
       </Section>
 
       {/* Launch Funnel - Clear User Journey */}
-      <LaunchFunnel onCreateRoom={() => setIsModalOpen(true)} />
+      <LaunchFunnel onCreateRoom={() => setShowGeneratorChoice(true)} />
 
       {/* Community Beta Phase */}
       <Section spacing="lg" background="primary">
@@ -247,7 +262,159 @@ const HomePage = () => {
         </Container>
       </Section>
 
-      <CreateRoomModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      {/* Room Generator Choice Modal */}
+      {showGeneratorChoice && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <Heading level={2} className="text-gray-900">
+                  🎯 Choose Your Room Creation Experience
+                </Heading>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowGeneratorChoice(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  ✕ Close
+                </Button>
+              </div>
+              
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Comprehensive Professional Flow */}
+                <Card className="border-2 border-blue-200 hover:border-blue-400 transition-colors cursor-pointer"
+                      onClick={() => {
+                        setSelectedGenerator('comprehensive');
+                        setShowGeneratorChoice(false);
+                        setShowRoomGenerator(true);
+                      }}>
+                  <CardContent className="p-6">
+                    <div className="text-center mb-4">
+                      <span className="text-4xl mb-2 block">🎯</span>
+                      <Heading level={3} className="text-blue-700">
+                        Professional Consultation
+                      </Heading>
+                    </div>
+                    <div className="space-y-3 text-sm">
+                      <Text>✅ <strong>6-Step Methodology:</strong> Complete professional room design process</Text>
+                      <Text>✅ <strong>Detailed Specifications:</strong> Full ROI analysis, homepage layouts, user flows</Text>
+                      <Text>✅ <strong>Safeguards & Confirmation:</strong> Iterative checks and explicit approval</Text>
+                      <Text>✅ <strong>MVP/Pro/Full Matrix:</strong> Complete feature planning roadmap</Text>
+                      <Text className="text-blue-600 font-medium">⏱️ 5-10 minutes • Most comprehensive</Text>
+                    </div>
+                    <Button className="w-full mt-4" variant="primary">
+                      Start Professional Design
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {/* Quick Unified Flow */}
+                <Card className="border-2 border-green-200 hover:border-green-400 transition-colors cursor-pointer"
+                      onClick={() => {
+                        setSelectedGenerator('unified');
+                        setShowGeneratorChoice(false);
+                        setShowRoomGenerator(true);
+                      }}>
+                  <CardContent className="p-6">
+                    <div className="text-center mb-4">
+                      <span className="text-4xl mb-2 block">⚡</span>
+                      <Heading level={3} className="text-green-700">
+                        Quick & Flexible
+                      </Heading>
+                    </div>
+                    <div className="space-y-3 text-sm">
+                      <Text>✅ <strong>Multiple Entry Points:</strong> Standalone, chat promotion, simple creation</Text>
+                      <Text>✅ <strong>Context Aware:</strong> Uses existing chat data for smart suggestions</Text>
+                      <Text>✅ <strong>Template Based:</strong> Choose from pre-built concepts or create custom</Text>
+                      <Text>✅ <strong>Streamlined Process:</strong> Faster with good customization options</Text>
+                      <Text className="text-green-600 font-medium">⏱️ 2-5 minutes • Balanced approach</Text>
+                    </div>
+                    <Button className="w-full mt-4" variant="outline">
+                      Start Quick Creation
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              <div className="mt-6 text-center">
+                <Text className="text-gray-600 text-sm">
+                  💡 <strong>Not sure?</strong> Try the Professional Consultation for the most comprehensive room design experience.
+                </Text>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Selected Room Generator */}
+      {showRoomGenerator && selectedGenerator === 'comprehensive' && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-start justify-center p-4 overflow-y-auto">
+          <div className="w-full max-w-6xl min-h-screen py-8">
+            <div className="bg-white rounded-xl shadow-2xl overflow-hidden">
+              <div className="max-h-[90vh] overflow-y-auto">
+                <ComprehensiveFocusRoomGenerator
+                  onComplete={(roomSpec) => {
+                    console.log('🎉 Comprehensive room created:', roomSpec);
+                    setShowRoomGenerator(false);
+                    setSelectedGenerator(null);
+                    // Could redirect to the new room or show success message
+                  }}
+                  onCancel={() => {
+                    setShowRoomGenerator(false);
+                    setSelectedGenerator(null);
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showRoomGenerator && selectedGenerator === 'unified' && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <Heading level={2} className="text-gray-900">
+                  🎯 Create Your Focus Room
+                </Heading>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setShowRoomGenerator(false);
+                    setSelectedGenerator(null);
+                  }}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  ✕ Close
+                </Button>
+              </div>
+              <UnifiedRoomGenerator
+                entryPoint="standalone"
+                onRoomRequest={(roomData) => {
+                  console.log('🎉 Unified room created:', roomData);
+                  setShowRoomGenerator(false);
+                  setSelectedGenerator(null);
+                }}
+                onClose={() => {
+                  setShowRoomGenerator(false);
+                  setSelectedGenerator(null);
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Enhanced Room Generator for Demo */}
+      {showEnhancedGenerator && (
+        <EnhancedRoomGenerator
+          onClose={() => setShowEnhancedGenerator(false)}
+          triggerSource="homepage"
+        />
+      )}
     </>
   );
 };

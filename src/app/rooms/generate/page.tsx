@@ -2,9 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import RoomGenerator from '@/components/rooms/RoomGenerator';
+import UnifiedRoomGenerator from '@/components/rooms/UnifiedRoomGenerator';
 import { Container, Section, Heading, Text, Card, CardContent } from '@/components/ui';
-import KaiCharacter from '@/components/KaiCharacter';
 
 interface RoomConcept {
   id: string;
@@ -145,7 +144,10 @@ export default function RoomGeneratorPage() {
       {/* Room Generator */}
       <Section spacing="lg">
         <div className={isSubmitting ? 'opacity-50 pointer-events-none' : ''}>
-          <RoomGenerator onRoomRequest={handleRoomRequest} />
+          <UnifiedRoomGenerator 
+            entryPoint="standalone" 
+            onRoomRequest={handleRoomRequest} 
+          />
         </div>
       </Section>
 

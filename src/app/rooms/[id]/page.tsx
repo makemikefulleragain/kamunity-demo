@@ -7,22 +7,22 @@ import { Button } from '@/components/ui/Button'
 import { Heading, Text } from '@/components/ui/Typography'
 import SummaryPanel from '@/components/summaries/SummaryPanel'
 import ContentUpload from '@/components/content/ContentUpload';
-import { ChatMessage } from '@/components/chat/ChatMessage';
+import { RealTimeChat } from '@/components/chat/RealTimeChat';
 import KaiCharacter from '@/components/KaiCharacter';
+import { useAuth } from '@/lib/auth/auth-context';
 import { cn } from '@/lib/utils';
-import { FocusRoom, ContentUpload as ContentUploadType, Message } from '@/types/communities'
+import { FocusRoom, ContentUpload as ContentUploadType } from '@/types/communities'
 
 interface RoomPageProps {
   params: { id: string }
 }
 
 const FocusRoomPage: React.FC<RoomPageProps> = ({ params }) => {
+  const { user, userProfile } = useAuth()
   const [room, setRoom] = useState<FocusRoom | null>(null)
   const [uploads, setUploads] = useState<ContentUploadType[]>([])
-  const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [showUploadModal, setShowUploadModal] = useState(false)
-  const [newMessage, setNewMessage] = useState('')
 
   // Mock data for development - replace with real API calls
   useEffect(() => {
@@ -101,51 +101,8 @@ const FocusRoomPage: React.FC<RoomPageProps> = ({ params }) => {
       }
     ]
 
-    const mockMessages: Message[] = [
-      {
-        id: 'msg-1',
-        content: 'Great work on the soil testing, Marcus! The pH levels look perfect for tomatoes and peppers. Should we start planning the spring planting schedule?',
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2),
-        authorId: 'user-1',
-        conversationId: 'conv-1',
-        author: {
-          id: 'user-1',
-          name: 'Sarah Chen',
-          email: 'sarah@example.com',
-          avatarUrl: undefined
-        } as any
-      },
-      {
-        id: 'msg-2',
-        content: 'Absolutely! I was thinking we could do a community planting day next Saturday. I can bring seedlings from my greenhouse.',
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 1),
-        authorId: 'user-2',
-        conversationId: 'conv-1',
-        author: {
-          id: 'user-2',
-          name: 'Marcus Johnson',
-          email: 'marcus@example.com',
-          avatarUrl: undefined
-        } as any
-      },
-      {
-        id: 'msg-3',
-        content: 'Count me in! I can help with the layout setup. The new garden design looks amazing in the PDF you shared, Sarah.',
-        createdAt: new Date(Date.now() - 1000 * 60 * 30),
-        authorId: 'user-3',
-        conversationId: 'conv-1',
-        author: {
-          id: 'user-3',
-          name: 'Elena Rodriguez',
-          email: 'elena@example.com',
-          avatarUrl: undefined
-        } as any
-      }
-    ]
-
     setRoom(mockRoom)
     setUploads(mockUploads)
-    setMessages(mockMessages)
     setIsLoading(false)
   }, [params.id])
 
@@ -172,27 +129,6 @@ const FocusRoomPage: React.FC<RoomPageProps> = ({ params }) => {
       uploads: [...(prev.uploads || []), upload]
     } : null)
     setShowUploadModal(false)
-  }
-
-  const handleSendMessage = () => {
-    if (!newMessage.trim()) return
-
-    const message: Message = {
-      id: `msg-${Date.now()}`,
-      content: newMessage,
-      createdAt: new Date(),
-      authorId: 'current-user',
-      conversationId: 'conv-1',
-      author: {
-        id: 'current-user',
-        name: 'You',
-        email: 'you@example.com',
-        avatarUrl: undefined
-      } as any
-    }
-
-    setMessages(prev => [...prev, message])
-    setNewMessage('')
   }
 
   if (isLoading) {
@@ -328,60 +264,28 @@ const FocusRoomPage: React.FC<RoomPageProps> = ({ params }) => {
           {/* Main Content */}
           <div className="col-span-12 lg:col-span-6">
             <div className="space-y-6">
-              {/* Chat Messages */}
+              {/* Real-Time Chat Section */}
               <Card>
                 <CardHeader>
-                  <Flex justify="between" align="center">
-                    <CardTitle>Room Discussion</CardTitle>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => setShowUploadModal(true)}
-                    >
-                      Share File
-                    </Button>
-                  </Flex>
+                  <CardTitle className="flex items-center gap-2">
+                    💬 Room Discussion
+                    {user ? (
+                      <span className="text-sm font-normal text-gray-500">
+                        Welcome, {userProfile?.name || user.email}!
+                      </span>
+                    ) : (
+                      <span className="text-sm font-normal text-orange-600">
+                        Sign in to participate
+                      </span>
+                    )}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4 mb-4 max-h-96 overflow-y-auto">
-                    {messages.map(message => (
-                      <ChatMessage
-                        key={message.id}
-                        id={message.id}
-                        content={message.content}
-                        createdAt={message.createdAt}
-                        conversationId={room.id}
-                        author={{
-                          id: message.author?.id || 'unknown',
-                          name: message.author?.name || 'Unknown',
-                          avatarUrl: message.author?.avatarUrl || undefined
-                        }}
-                        reactions={[]}
-                        uploads={[]}
-                        onReact={(messageId, reaction) => {
-                          console.log('React to message:', messageId, reaction)
-                        }}
-                        onReply={(messageId) => {
-                          console.log('Reply to message:', messageId)
-                        }}
-                      />
-                    ))}
-                  </div>
-
-                  {/* Message Input */}
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Type your message..."
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                      className="flex-1 px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                    />
-                    <Button onClick={handleSendMessage}>
-                      Send
-                    </Button>
-                  </div>
+                  <RealTimeChat
+                    roomId={params.id}
+                    userId={user?.id}
+                    maxHeight="500px"
+                  />
                 </CardContent>
               </Card>
             </div>

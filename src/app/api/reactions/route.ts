@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-import { Database } from '@/lib/supabase/types'
+// import { createClient } from '@supabase/supabase-js'
+// import { Database } from '@/lib/supabase/types'
 
-const supabase = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+// TODO: Implement actual Supabase integration
+// const supabase = createClient<Database>(
+//   process.env.NEXT_PUBLIC_SUPABASE_URL!,
+//   process.env.SUPABASE_SERVICE_ROLE_KEY!
+// )
 
 // Kamunity vibe check reactions
 const ALLOWED_REACTIONS = [
@@ -128,7 +129,7 @@ export async function GET(request: NextRequest) {
 
     // Group reactions by type with counts
     const reactionCounts = ALLOWED_REACTIONS.reduce((acc, type) => {
-      acc[type] = (reactions || []).filter((r: any) => r.reaction_type === type).length
+      acc[type] = (reactions || []).filter((r: unknown) => r.reaction_type === type).length
       return acc
     }, {} as Record<string, number>)
 

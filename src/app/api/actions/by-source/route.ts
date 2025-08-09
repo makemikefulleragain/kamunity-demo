@@ -1,12 +1,13 @@
 // API endpoint for fetching actions by source context
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-import { Database } from '@/lib/supabase/types'
+// import { createClient } from '@supabase/supabase-js'
+// import { Database } from '@/lib/supabase/types'
 
-const supabase = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+// TODO: Implement actual Supabase integration
+// const supabase = createClient<Database>(
+//   process.env.NEXT_PUBLIC_SUPABASE_URL!,
+//   process.env.SUPABASE_SERVICE_ROLE_KEY!
+// )
 
 // GET /api/actions/by-source - Fetch actions by source context
 export async function GET(request: NextRequest) {
@@ -17,15 +18,15 @@ export async function GET(request: NextRequest) {
     const sourceType = searchParams.get('sourceType')
     const sourceId = searchParams.get('sourceId')
     const userId = searchParams.get('userId')
-    const includePrivate = searchParams.get('includePrivate') === 'true'
+    // // const includePrivate = searchParams.get('includePrivate') === 'true' // TODO: Implement when needed
     
     // Handle "my actions" request
     if (searchParams.get('my') === 'true' && userId) {
-      const includeAssigned = searchParams.get('includeAssigned') !== 'false'
-      const includeCreated = searchParams.get('includeCreated') !== 'false'
+      // // const includeAssigned = searchParams.get('includeAssigned') === 'true' // TODO: Implement when needed
+      // // const includeCreated = searchParams.get('includeCreated') !== 'false' // TODO: Implement when needed
       
       // Mock implementation - replace with actual Supabase query later
-      const actions: any[] = []
+      const actions: unknown[] = []
       
       return NextResponse.json({
         success: true,
@@ -51,7 +52,7 @@ export async function GET(request: NextRequest) {
     }
     
     // Mock implementation - replace with actual Supabase query later
-    const actions: any[] = []
+    const actions: unknown[] = []
     
     return NextResponse.json({
       success: true,
