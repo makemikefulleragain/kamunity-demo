@@ -17,3 +17,6 @@ export type { HeadingProps, TextProps, LinkProps } from './Typography'
 
 export { Container, Section, Grid, Flex } from './Layout'
 export type { ContainerProps, SectionProps, GridProps, FlexProps } from './Layout'
+
+export { Badge } from './Badge'
+export type { BadgeProps } from './Badge'

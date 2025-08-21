@@ -1,14 +1,16 @@
 import type { Metadata } from 'next';
-import Header from '@/components/Header';
-import { AuthProvider } from '@/lib/auth/auth-context';
-import { DemoAuthProvider } from '@/contexts/DemoAuthContext';
-import { DemoAuthWrapper } from '@/components/auth/DemoAuthWrapper';
-import './globals.css';
+import { Inter } from 'next/font/google'
+import './globals.css'
+import Header from '@/components/Header'
+import FloatingSurvey from '@/components/demo/FloatingSurvey'
+import ErrorBoundary from '@/components/ErrorBoundary'
+
+const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'Kamunity',
-  description: 'Community begins with one spark',
-};
+  description: 'Building community, one conversation at a time',
+}
 
 export default function RootLayout({
   children,
@@ -16,18 +18,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body>
-        <DemoAuthProvider>
-          <AuthProvider>
-            <DemoAuthWrapper>
-              <Header />
-              <main className="container mx-auto px-4 py-8">
-                {children}
-              </main>
-            </DemoAuthWrapper>
-          </AuthProvider>
-        </DemoAuthProvider>
+    <html lang="en">
+      <body className={`${inter.className} antialiased`} suppressHydrationWarning={true}>
+        <ErrorBoundary componentName="Header">
+          <Header />
+        </ErrorBoundary>
+        <main className="min-h-screen">
+          <ErrorBoundary componentName="Main Content">
+            {children}
+          </ErrorBoundary>
+        </main>
+        <ErrorBoundary componentName="FloatingSurvey">
+          <FloatingSurvey />
+        </ErrorBoundary>
       </body>
     </html>
   );

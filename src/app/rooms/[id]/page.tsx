@@ -1,423 +1,257 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Container, Section, Grid, Flex } from '@/components/ui/Layout'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Heading, Text } from '@/components/ui/Typography'
-import SummaryPanel from '@/components/summaries/SummaryPanel'
-import ContentUpload from '@/components/content/ContentUpload';
-import { RealTimeChat } from '@/components/chat/RealTimeChat';
-import KaiCharacter from '@/components/KaiCharacter';
-import { useAuth } from '@/lib/auth/auth-context';
-import { cn } from '@/lib/utils';
-import { FocusRoom, ContentUpload as ContentUploadType } from '@/types/communities'
+import React, { useState, useEffect } from 'react'
+import { useParams } from 'next/navigation'
+import { ArrowLeft, Users, MessageSquare, Activity, Bot, Play, Pause, TrendingUp, Eye } from 'lucide-react'
+import Link from 'next/link'
+import { goldenThreads } from '@/data/goldenThreads'
+import { memoryStore } from '@/lib/memoryStore'
 
-interface RoomPageProps {
-  params: { id: string }
-}
+export default function RoomPreviewPage() {
+  const params = useParams()
+  const [isPlaying, setIsPlaying] = useState(true)
+  const [simulationTime, setSimulationTime] = useState(0)
+  const [stats, setStats] = useState({
+    activeMembers: 12,
+    messages: 156,
+    impactScore: 450,
+    engagement: 78
+  })
 
-const FocusRoomPage: React.FC<RoomPageProps> = ({ params }) => {
-  const { user, userProfile } = useAuth()
-  const [room, setRoom] = useState<FocusRoom | null>(null)
-  const [uploads, setUploads] = useState<ContentUploadType[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [showUploadModal, setShowUploadModal] = useState(false)
-
-  // Mock data for development - replace with real API calls
+  // Find the room from golden threads
+  const roomThread = goldenThreads.rooms.find(r => r.id === params.id)
+  
   useEffect(() => {
-    const mockRoom: FocusRoom = {
-      id: params.id,
-      name: 'Sustainable Urban Farming',
-      purpose: 'Creating resilient local food systems through community gardens and urban agriculture',
-      description: 'A collaborative space for planning, sharing resources, and coordinating urban farming initiatives across our community. We focus on practical solutions, knowledge sharing, and building connections between gardeners.',
-      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30),
-      updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 2),
-      clubId: 'club-1',
-      status: 'active',
-      isPrivate: false,
-      maxMembers: 50,
-      tags: ['urban-farming', 'sustainability', 'community-gardens', 'food-security'],
-      pinnedContent: '🌱 Welcome! Please introduce yourself and share your gardening experience. Check out our resource library in the uploads section.',
-      lastActivity: new Date(Date.now() - 1000 * 60 * 30),
-      messageCount: 127,
-      memberCount: 23,
-      club: {
-        id: 'club-1',
-        name: 'Urban Gardens Initiative',
-        community: {
-          id: 'comm-1',
-          name: 'Climate Action Network'
-        }
-      } as any
-    }
+    // Track page view
+    memoryStore.trackPageView(`/rooms/${params.id}`, {
+      roomId: params.id,
+      roomName: roomThread?.title || 'Unknown Room'
+    })
+  }, [params.id, roomThread])
 
-    const mockUploads: ContentUploadType[] = [
-      {
-        id: 'upload-1',
-        filename: 'garden-layout-plan.pdf',
-        originalName: 'Community Garden Layout Plan.pdf',
-        fileType: 'document',
-        fileSize: 2048000,
-        mimeType: 'application/pdf',
-        storageLocation: '/uploads/garden-layout-plan.pdf',
-        moderationStatus: 'approved',
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
-        updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
-        uploaderId: 'user-1',
-        description: 'Proposed layout for the new community garden on 5th Street',
-        tags: ['garden-design', 'layout', 'planning'],
-        isPublic: true,
-        focusRoomId: params.id,
-        uploader: {
-          id: 'user-1',
-          name: 'Sarah Chen',
-          email: 'sarah@example.com',
-          avatarUrl: undefined
-        } as any
-      },
-      {
-        id: 'upload-2',
-        filename: 'soil-test-results.jpg',
-        originalName: 'Soil Test Results - March 2024.jpg',
-        fileType: 'image',
-        fileSize: 1024000,
-        mimeType: 'image/jpeg',
-        storageLocation: '/uploads/soil-test-results.jpg',
-        moderationStatus: 'approved',
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1),
-        updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1),
-        uploaderId: 'user-2',
-        description: 'Latest soil test results showing pH and nutrient levels',
-        tags: ['soil-testing', 'data', 'analysis'],
-        isPublic: true,
-        focusRoomId: params.id,
-        uploader: {
-          id: 'user-2',
-          name: 'Marcus Johnson',
-          email: 'marcus@example.com',
-          avatarUrl: undefined
-        } as any
-      }
-    ]
+  // Simulate activity updates
+  useEffect(() => {
+    if (!isPlaying) return
 
-    setRoom(mockRoom)
-    setUploads(mockUploads)
-    setIsLoading(false)
-  }, [params.id])
+    const interval = setInterval(() => {
+      setSimulationTime(prev => prev + 1)
+      
+      // Randomly update stats
+      setStats(prev => ({
+        activeMembers: Math.max(5, Math.min(20, prev.activeMembers + Math.floor(Math.random() * 3) - 1)),
+        messages: prev.messages + Math.floor(Math.random() * 5),
+        impactScore: prev.impactScore + Math.floor(Math.random() * 10),
+        engagement: Math.min(100, prev.engagement + Math.floor(Math.random() * 3))
+      }))
+    }, 2000)
 
-  const handleUploadComplete = (file: File) => {
-    // Convert File to ContentUploadType for mock purposes
-    const upload: ContentUploadType = {
-      id: Date.now().toString(),
-      filename: file.name,
-      originalName: file.name,
-      fileType: file.type.startsWith('image/') ? 'image' : 'document',
-      fileSize: file.size,
-      mimeType: file.type,
-      storageLocation: `/uploads/${file.name}`,
-      moderationStatus: 'approved',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      uploaderId: 'current-user-id',
-      tags: [],
-      isPublic: true
-    };
-    
-    setRoom(prev => prev ? {
-      ...prev,
-      uploads: [...(prev.uploads || []), upload]
-    } : null)
-    setShowUploadModal(false)
-  }
+    return () => clearInterval(interval)
+  }, [isPlaying])
 
-  if (isLoading) {
+  // Simulated chat messages
+  const simulatedMessages = [
+    { id: 1, user: 'Sarah Chen', message: 'Just finished setting up the community garden beds!', time: '2m ago' },
+    { id: 2, user: 'Marcus Johnson', message: 'Great work! I can bring some tomato seedlings tomorrow.', time: '5m ago' },
+    { id: 3, user: 'Emily Rodriguez', message: 'Count me in for the weekend planting session.', time: '8m ago' },
+    { id: 4, user: 'David Kim', message: 'Has anyone tested the soil pH yet?', time: '12m ago' },
+    { id: 5, user: 'Lisa Wang', message: 'Yes! Results are in the shared folder. Looking good!', time: '15m ago' }
+  ]
+
+  // Simulated activity feed
+  const activityFeed = [
+    { time: '2m ago', user: 'Sarah Chen', action: 'Logged community impact', detail: '+50 points' },
+    { time: '5m ago', user: 'Marcus Johnson', action: 'Shared resource', detail: 'Soil testing guide' },
+    { time: '12m ago', user: 'Emily Rodriguez', action: 'Joined the room' },
+    { time: '18m ago', user: 'David Kim', action: 'Started discussion', detail: 'Weekend schedule' },
+    { time: '25m ago', user: 'Lisa Wang', action: 'Completed milestone', detail: 'Site preparation' }
+  ]
+
+  if (!roomThread) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 flex items-center justify-center">
-        <Text>Loading focus room...</Text>
-      </div>
-    )
-  }
-
-  if (!room) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 flex items-center justify-center">
-        <Text>Focus room not found</Text>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center">
+        <p className="text-gray-600">Room not found</p>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50">
-      <Container size="full" className="py-6">
-        {/* Room Header */}
-        <Section spacing="sm">
-          <div className="mb-6">
-            {/* Breadcrumb */}
-            <div className="flex items-center text-sm text-neutral-600 mb-4">
-              <Text variant="body-small" color="muted">
-                {room.club?.community?.name} → {room.club?.name} → Focus Room
-              </Text>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+      {/* Simulation Control Bar */}
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Link href="/rooms" className="text-blue-600 hover:text-blue-700 flex items-center gap-2">
+                <ArrowLeft className="w-4 h-4" />
+                Back to Rooms
+              </Link>
+              <div className="text-sm text-gray-500">
+                Simulation Mode • {Math.floor(simulationTime / 60)}:{(simulationTime % 60).toString().padStart(2, '0')}
+              </div>
+            </div>
+            <button
+              onClick={() => setIsPlaying(!isPlaying)}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+              {isPlaying ? 'Pause' : 'Play'} Simulation
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Demo Notice */}
+      <div className="bg-yellow-50 border-b border-yellow-200">
+        <div className="max-w-7xl mx-auto px-4 py-2">
+          <p className="text-sm text-yellow-800 flex items-center gap-2">
+            <Eye className="w-4 h-4" />
+            This is a simulation preview. Watch how community members collaborate in real-time.
+          </p>
+        </div>
+      </div>
+
+      {/* Room Header */}
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">{roomThread.title}</h1>
+          <p className="text-gray-600 mb-4">{roomThread.description}</p>
+          
+          {/* Live Stats */}
+          <div className="grid grid-cols-4 gap-4 mt-6">
+            <div className="bg-blue-50 rounded-lg p-4">
+              <div className="flex items-center gap-2 text-blue-600 mb-1">
+                <Users className="w-4 h-4" />
+                <span className="text-sm font-medium">Active Members</span>
+              </div>
+              <p className="text-2xl font-bold text-gray-900">{stats.activeMembers}</p>
+            </div>
+            <div className="bg-green-50 rounded-lg p-4">
+              <div className="flex items-center gap-2 text-green-600 mb-1">
+                <MessageSquare className="w-4 h-4" />
+                <span className="text-sm font-medium">Messages</span>
+              </div>
+              <p className="text-2xl font-bold text-gray-900">{stats.messages}</p>
+            </div>
+            <div className="bg-purple-50 rounded-lg p-4">
+              <div className="flex items-center gap-2 text-purple-600 mb-1">
+                <TrendingUp className="w-4 h-4" />
+                <span className="text-sm font-medium">Impact Score</span>
+              </div>
+              <p className="text-2xl font-bold text-gray-900">{stats.impactScore}</p>
+            </div>
+            <div className="bg-orange-50 rounded-lg p-4">
+              <div className="flex items-center gap-2 text-orange-600 mb-1">
+                <Activity className="w-4 h-4" />
+                <span className="text-sm font-medium">Engagement</span>
+              </div>
+              <p className="text-2xl font-bold text-gray-900">{stats.engagement}%</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Simulated Chat */}
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                <MessageSquare className="w-5 h-5 text-blue-600" />
+                Live Discussion
+              </h2>
+              <div className="space-y-4 max-h-96 overflow-y-auto">
+                {simulatedMessages.map(msg => (
+                  <div key={msg.id} className="flex gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
+                      {msg.user[0]}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-baseline gap-2">
+                        <span className="font-medium text-gray-900">{msg.user}</span>
+                        <span className="text-xs text-gray-500">{msg.time}</span>
+                      </div>
+                      <p className="text-gray-700 mt-1">{msg.message}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            {/* Room Title & Status */}
-            <Flex justify="between" align="start" className="mb-4">
-              <div className="flex-1">
-                <Flex align="center" className="mb-2">
-                  <Heading level={1} className="text-neutral-900 mr-3">
-                    {room.name}
-                  </Heading>
-                  <span className={cn(
-                    'px-2 py-1 text-xs font-medium rounded-full border',
-                    room.status === 'active' ? 'bg-green-100 text-green-700 border-green-200' :
-                    room.status === 'dormant' ? 'bg-yellow-100 text-yellow-700 border-yellow-200' :
-                    'bg-gray-100 text-gray-700 border-gray-200'
-                  )}>
-                    {room.status}
-                  </span>
-                  {room.isPrivate && (
-                    <span className="ml-2 px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-700 border border-purple-200">
-                      Private
-                    </span>
-                  )}
-                </Flex>
-                
-                <Text className="text-neutral-700 mb-3">
-                  {room.purpose}
-                </Text>
+            {/* Activity Feed */}
+            <div className="bg-white rounded-xl shadow-sm p-6 mt-6">
+              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                <Activity className="w-5 h-5 text-green-600" />
+                Recent Activity
+              </h2>
+              <div className="space-y-3">
+                {activityFeed.map((item, index) => (
+                  <div key={index} className="flex items-start gap-3 pb-3 border-b border-gray-100 last:border-0">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                    <div className="flex-1">
+                      <div className="flex items-baseline gap-2">
+                        <span className="font-medium text-gray-900">{item.user}</span>
+                        <span className="text-sm text-gray-600">{item.action}</span>
+                      </div>
+                      {item.detail && (
+                        <p className="text-sm text-gray-500 mt-1">{item.detail}</p>
+                      )}
+                      <p className="text-xs text-gray-400 mt-1">{item.time}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
 
-                {room.description && (
-                  <Text variant="body-small" color="muted" className="mb-3">
-                    {room.description}
-                  </Text>
-                )}
-
-                {/* Room Stats */}
-                <Flex align="center" gap="md" className="mb-3">
-                  <div className="flex items-center">
-                    <Text variant="body-small" color="muted" className="mr-1">
-                      👥 {room.memberCount} members
-                    </Text>
-                  </div>
-                  <div className="flex items-center">
-                    <Text variant="body-small" color="muted" className="mr-1">
-                      💬 {room.messageCount} messages
-                    </Text>
-                  </div>
-                  <div className="flex items-center">
-                    <Text variant="body-small" color="muted" className="mr-1">
-                      📁 {uploads.length} uploads
-                    </Text>
-                  </div>
-                  <div className="flex items-center">
-                    <Text variant="body-small" color="muted">
-                      🕒 Active {Math.floor((Date.now() - room.lastActivity.getTime()) / (1000 * 60))} min ago
-                    </Text>
-                  </div>
-                </Flex>
-
-                {/* Tags */}
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {room.tags.map(tag => (
-                    <span
-                      key={tag}
-                      className="px-2 py-1 text-xs bg-neutral-100 text-neutral-700 rounded-full"
-                    >
-                      {tag}
-                    </span>
-                  ))}
+          {/* Kai AI Assistant Preview */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div className="p-4 border-b border-gray-200">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                  <Bot className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900">Kai AI Assistant</h2>
+                  <p className="text-sm text-gray-600">Automated insights and recommendations</p>
                 </div>
               </div>
-
-              <div className="flex gap-2">
-                <Button variant="primary" size="sm">
-                  Join Room
-                </Button>
-                <Button variant="outline" size="sm">
-                  Invite Members
-                </Button>
-              </div>
-            </Flex>
-
-            {/* Pinned Content */}
-            {room.pinnedContent && (
-              <div className="bg-primary-50 border border-primary-200 rounded-lg p-4 mb-6">
-                <Text variant="body-small" className="text-primary-800">
-                  📌 {room.pinnedContent}
-                </Text>
-              </div>
-            )}
-          </div>
-        </Section>
-
-        <Grid cols={12} gap="lg">
-          {/* Left Sidebar - AI Summary */}
-          <div className="col-span-12 lg:col-span-3">
-            <SummaryPanel 
-              onFilterChange={(timeframe, category) => {
-                // Handle filter changes for room-specific content
-                console.log('Room filter changed:', timeframe, category);
-              }}
-            />
-          </div>
-
-          {/* Main Content */}
-          <div className="col-span-12 lg:col-span-6">
-            <div className="space-y-6">
-              {/* Real-Time Chat Section */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    💬 Room Discussion
-                    {user ? (
-                      <span className="text-sm font-normal text-gray-500">
-                        Welcome, {userProfile?.name || user.email}!
-                      </span>
-                    ) : (
-                      <span className="text-sm font-normal text-orange-600">
-                        Sign in to participate
-                      </span>
-                    )}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <RealTimeChat
-                    roomId={params.id}
-                    userId={user?.id}
-                    maxHeight="500px"
-                  />
-                </CardContent>
-              </Card>
             </div>
-          </div>
-
-          {/* Right Sidebar - Uploads & Activity */}
-          <div className="col-span-12 lg:col-span-3">
-            <div className="space-y-6">
-              {/* Recent Uploads */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Recent Uploads</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {uploads.length === 0 ? (
-                      <Text variant="body-small" color="muted" className="text-center py-4">
-                        No uploads yet
-                      </Text>
-                    ) : (
-                      uploads.map(upload => (
-                        <div key={upload.id} className="border border-neutral-200 rounded-lg p-3">
-                          <div className="flex items-start justify-between mb-2">
-                            <div className="flex-1">
-                              <Text variant="body-small" weight="medium" className="text-neutral-900">
-                                {upload.originalName}
-                              </Text>
-                              <Text variant="body-small" color="muted">
-                                by {upload.uploader?.name} • {new Date(upload.createdAt).toLocaleDateString()}
-                              </Text>
-                            </div>
-                            <span className={cn(
-                              'px-2 py-1 text-xs rounded-full',
-                              upload.fileType === 'image' ? 'bg-green-100 text-green-700' :
-                              upload.fileType === 'document' ? 'bg-blue-100 text-blue-700' :
-                              'bg-gray-100 text-gray-700'
-                            )}>
-                              {upload.fileType}
-                            </span>
-                          </div>
-                          
-                          {upload.description && (
-                            <Text variant="body-small" className="text-neutral-700 mb-2">
-                              {upload.description}
-                            </Text>
-                          )}
-
-                          <div className="flex flex-wrap gap-1 mb-2">
-                            {upload.tags.map(tag => (
-                              <span
-                                key={tag}
-                                className="px-1 py-0.5 text-xs bg-neutral-100 text-neutral-600 rounded"
-                              >
-                                {tag}
-                              </span>
-                            ))}
-                          </div>
-
-                          {/* Reactions temporarily disabled */}
-                          <div className="text-sm text-gray-500 mt-2">
-                            👍 💡 🎯 reactions coming soon!
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </Grid>
-
-        {/* Upload Modal */}
-        {showUploadModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              {/* Header with Kai */}
-              <div className="bg-gradient-to-r from-primary-50 to-secondary-50 p-6 rounded-t-lg">
-                <Flex justify="between" align="start" className="mb-4">
-                  <div className="flex-1">
-                    <KaiCharacter
-                      variant="inline"
-                      expression="excited"
-                      size="md"
-                      title="📎 Share Something Amazing!"
-                      message="Ready to contribute to this room? I'm excited to see what you'll share with the community!"
-                    />
-                  </div>
-                  <button
-                    onClick={() => setShowUploadModal(false)}
-                    className="text-neutral-400 hover:text-neutral-600 transition-colors ml-4 p-1"
-                  >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </Flex>
-              </div>
-              
-              {/* Content */}
-              <div className="p-6">
-                <div className="mb-6">
-                  <Text variant="body-large" className="mb-2 font-medium">What would you like to share? 🌟</Text>
-                  <Text variant="body-small" color="muted">
-                    Upload documents, images, or files that will help move this room's goals forward. 
-                    Your contributions make a real difference!
-                  </Text>
+            <div className="p-6">
+              <div className="space-y-4">
+                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <p className="text-sm text-blue-900 font-medium mb-2">📊 Weekly Summary</p>
+                  <p className="text-sm text-blue-800">
+                    Your room has seen 23% increased activity this week. Key topics: composting techniques, 
+                    volunteer coordination, and grant applications. Consider scheduling a community workshop.
+                  </p>
                 </div>
-                
-                <ContentUpload
-                  onUploadComplete={handleUploadComplete}
-                  maxFileSize={10 * 1024 * 1024} // 10MB
-                  acceptedTypes={['image/*', 'application/pdf', '.doc', '.docx']}
-                />
-                
-                {/* Helpful Tips */}
-                <div className="mt-6 p-4 bg-primary-50 rounded-lg border border-primary-100">
-                  <Text variant="body-small" className="font-medium text-primary-700 mb-2">💡 Kai's Tips:</Text>
-                  <ul className="text-sm text-primary-600 space-y-1">
-                    <li>• Images and PDFs work great for sharing ideas</li>
-                    <li>• Documents help organize thoughts and plans</li>
-                    <li>• Keep files under 10MB for best performance</li>
-                    <li>• Add a quick description when you upload!</li>
+                <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                  <p className="text-sm text-green-900 font-medium mb-2">🎯 Suggested Actions</p>
+                  <ul className="text-sm text-green-800 space-y-1">
+                    <li>• Review and approve 3 pending resource uploads</li>
+                    <li>• Connect with new member Emily Rodriguez</li>
+                    <li>• Document this week's garden progress</li>
                   </ul>
                 </div>
+                <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                  <p className="text-sm text-purple-900 font-medium mb-2">💡 Opportunity Alert</p>
+                  <p className="text-sm text-purple-800">
+                    Similar rooms in your network are organizing a city-wide garden tour. 
+                    This could increase visibility and attract new volunteers.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-        )}
-      </Container>
+        </div>
+
+        {/* Demo Notice */}
+        <div className="mt-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <p className="text-sm text-yellow-800 text-center">
+            <strong>Demo Mode:</strong> This is a simulation showing how focus rooms operate. 
+            Real rooms would have live interactions, file uploads, and member collaboration.
+          </p>
+        </div>
+      </div>
     </div>
   )
 }
-
-export default FocusRoomPage

@@ -22,12 +22,60 @@ const SummaryPanel: React.FC<SummaryPanelProps> = ({ onFilterChange }) => {
   const timeframes = ['TODAY', 'LAST WEEK', 'LAST MONTH', 'LAST YEAR'];
   const categories = ['FEATURED', 'FUN', 'FACTUAL', 'UNUSUAL', 'CURIOUS', 'SPICY', 'NICE'];
 
-  // Key highlights from kamunity.org
-  const keyHighlights = [
-    'Gaming tournament attracted 120+ participants across platforms',
-    'Meme contest generated over 500 community shares',
-    'Comedy night featured 15 members performing tech humor'
-  ];
+  // Dynamic content based on filter combinations
+  const getFilteredContent = () => {
+    const key = `${selectedTimeframe}_${selectedCategory}`;
+    
+    const contentMap: Record<string, {
+      highlights: string[];
+      summary: string;
+    }> = {
+      'TODAY_FEATURED': {
+        highlights: [
+          'Gaming tournament attracted 120+ participants across platforms',
+          'Meme contest generated over 500 community shares',
+          'Comedy night featured 15 members performing tech humor'
+        ],
+        summary: 'Today\'s featured stories showcase our vibrant gaming and creative community with record participation and engagement.'
+      },
+      'TODAY_FUN': {
+        highlights: [
+          'Meme battle royale sparked 200+ creative submissions',
+          'Virtual karaoke night featured surprise celebrity guest',
+          'Pet photo contest overwhelmed servers with cuteness'
+        ],
+        summary: 'Today\'s fun highlights celebrate creativity, music, and our beloved community pets bringing joy to everyone.'
+      },
+      'TODAY_FACTUAL': {
+        highlights: [
+          'Community garden project yields 500kg of fresh produce',
+          'Local budget analysis reveals $2M in potential savings',
+          'Climate action group documents 30% emissions reduction'
+        ],
+        summary: 'Today\'s factual updates demonstrate measurable community impact through environmental and civic initiatives.'
+      },
+      'LAST WEEK_FUN': {
+        highlights: [
+          'Street art festival transformed 12 neighborhood walls',
+          'Flash mob coordination involved 80+ synchronized dancers',
+          'Community cookbook reached 1000 recipe submissions'
+        ],
+        summary: 'Last week\'s fun activities brought neighbors together through art, movement, and shared culinary traditions.'
+      },
+      'LAST WEEK_FACTUAL': {
+        highlights: [
+          'Neighborhood watch reduced crime reports by 40%',
+          'Community solar project generated 15MWh clean energy',
+          'Local business cooperative increased member revenue 25%'
+        ],
+        summary: 'Last week\'s factual achievements show concrete progress in safety, sustainability, and economic development.'
+      }
+    };
+
+    return contentMap[key] || contentMap['TODAY_FEATURED'];
+  };
+
+  const currentContent = getFilteredContent();
 
   // Handle filter changes with mutual exclusivity logic
   const handleTimeframeChange = (timeframe: string) => {
@@ -255,7 +303,7 @@ const SummaryPanel: React.FC<SummaryPanelProps> = ({ onFilterChange }) => {
               Three Key Highlights:
             </Heading>
             <ul className="space-y-3">
-              {keyHighlights.map((highlight, index) => (
+              {currentContent.highlights.map((highlight, index) => (
                 <li key={index} className="flex items-start gap-2">
                   <span className="w-2 h-2 bg-primary-500 rounded-full mt-2 flex-shrink-0"></span>
                   <Text variant="body-base" className="text-gray-700 leading-relaxed">
@@ -264,6 +312,13 @@ const SummaryPanel: React.FC<SummaryPanelProps> = ({ onFilterChange }) => {
                 </li>
               ))}
             </ul>
+            
+            {/* Dynamic Summary Text */}
+            <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+              <Text variant="body-small" className="text-blue-800 font-medium">
+                {currentContent.summary}
+              </Text>
+            </div>
           </div>
           
           {/* Bottom Left - Meet the News Team */}

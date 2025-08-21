@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { MessageCircle, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Text } from '@/components/ui/Typography';
 import toast from 'react-hot-toast';
+import { formatDistanceToNow } from 'date-fns';
 
 interface NewsItem {
   id: string;
@@ -120,17 +121,41 @@ const SimpleNewsCard: React.FC<SimpleNewsCardProps> = ({ newsItem }) => {
 
   const displayedComments = expanded ? comments : comments.slice(0, 3);
   const canPromote = comments.length >= 10;
+  
+  // Generate random values once using useMemo to avoid setState during render
+  const readyForChat = useMemo(() => Math.random() > 0.7, []);
+  const joinDiscussion = useMemo(() => Math.random() > 0.8, []);
 
   return (
     <Card className="hover:shadow-lg transition-shadow">
       <CardHeader>
-        <div className="flex items-center justify-between mb-3">
-          <Badge className={getContentTypeColor(newsItem.content_type)}>
-            {getContentTypeLabel(newsItem.content_type)}
-          </Badge>
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <MessageCircle className="w-4 h-4" />
-            {comments.length}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className={`px-2 py-1 text-xs font-medium rounded ${getContentTypeColor(newsItem.content_type)}`}>
+              {getContentTypeLabel(newsItem.content_type)}
+            </span>
+            <span className="text-xs text-gray-500">
+              {formatDistanceToNow(new Date(newsItem.created_at), { addSuffix: true })}
+            </span>
+            {/* Auto-promotion status */}
+            {readyForChat && (
+              <span className="px-2 py-1 text-xs font-medium rounded bg-green-100 text-green-800">
+                🔥 Ready for Chat
+              </span>
+            )}
+            {joinDiscussion && (
+              <a 
+                href="/chat" 
+                className="px-2 py-1 text-xs font-medium rounded bg-blue-100 text-blue-800 hover:bg-blue-200 transition-colors"
+              >
+                💬 Join Discussion
+              </a>
+            )}
+          </div>
+          <div className="flex items-center gap-2 text-xs text-gray-500">
+            <span>{newsItem.comment_count} comments</span>
+            <span>•</span>
+            <span>{newsItem.engagement_score} engagement</span>
           </div>
         </div>
         

@@ -3,12 +3,16 @@
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { ChatMessage } from './ChatMessage'
+import { EnhancedChatHeader } from './EnhancedChatHeader'
+import { ChatFiltersAndTools } from './ChatFiltersAndTools'
+import { QuickPoll, CreatePollModal } from './QuickPoll'
 import UnifiedRoomGenerator from '@/components/rooms/UnifiedRoomGenerator'
 import { Button } from '@/components/ui/Button'
 import { Text } from '@/components/ui/Typography'
 import { Flex } from '@/components/ui/Layout'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
+import { Card, CardContent } from '@/components/ui/Card'
 import { cn } from '@/lib/utils'
+// Icons imported by enhanced components
 
 interface RealTimeChatProps {
   roomId: string
@@ -16,6 +20,25 @@ interface RealTimeChatProps {
   className?: string
   maxHeight?: string
 }
+
+interface ChatStats {
+  activeUsers: number
+  messageCount: number
+  engagementLevel: 'low' | 'medium' | 'high'
+  recentActivity: string
+}
+
+interface Poll {
+  id: string
+  question: string
+  options: { id: string; text: string; votes: number }[]
+  totalVotes: number
+  userVote?: string
+  createdBy: string
+  createdAt: string
+}
+
+type ChatFilter = 'all' | 'hot' | 'questions' | 'ideas' | 'polls'
 
 interface ChatRoom {
   id: string
@@ -50,6 +73,19 @@ export const RealTimeChat = ({
   const [newMessage, setNewMessage] = useState('')
   const [sending, setSending] = useState(false)
   const [showPromoteModal, setShowPromoteModal] = useState(false)
+  
+  // Enhanced features state
+  const [activeFilter, setActiveFilter] = useState<ChatFilter>('all')
+  const [showCreatePoll, setShowCreatePoll] = useState(false)
+  const [polls, setPolls] = useState<Poll[]>([])
+  const [chatStats, setChatStats] = useState<ChatStats>({
+    activeUsers: 0,
+    messageCount: 0,
+    engagementLevel: 'low',
+    recentActivity: 'No recent activity'
+  })
+  const [aiSummary, setAiSummary] = useState<string>('')
+  
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   // Fetch room and messages data
@@ -83,6 +119,74 @@ export const RealTimeChat = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
+  // Generate AI summary and stats when messages change
+  useEffect(() => {
+    const generateAISummary = () => {
+      if (messages.length === 0) {
+        setAiSummary('No messages yet')
+        return
+      }
+
+      const recentMessages = messages.slice(-10)
+      const allText = recentMessages.map(m => m.content.toLowerCase()).join(' ')
+      
+      // Static keyword analysis
+      const hotKeywords = ['urgent', 'important', 'breaking', 'crisis', 'trending']
+      const questionKeywords = ['how', 'what', 'why', 'when', 'where', '?']
+      const ideaKeywords = ['should', 'could', 'what if', 'propose', 'suggest', 'idea']
+      
+      const hasHotTopics = hotKeywords.some(keyword => allText.includes(keyword))
+      const hasQuestions = questionKeywords.some(keyword => allText.includes(keyword))
+      const hasIdeas = ideaKeywords.some(keyword => allText.includes(keyword))
+      
+      let summary = `Active discussion with ${messages.length} messages. `
+      
+      if (hasHotTopics) summary += 'Hot topics being discussed. '
+      if (hasQuestions) summary += 'Questions being asked. '
+      if (hasIdeas) summary += 'Ideas being shared. '
+      
+      if (messages.length >= 10) {
+        summary += 'Ready for promotion to Focus Room.'
+      } else {
+        summary += `${10 - messages.length} more messages until Focus Room eligibility.`
+      }
+      
+      setAiSummary(summary)
+    }
+
+    const updateChatStats = () => {
+      const uniqueUsers = new Set(messages.map(m => m.user_id)).size
+      const recentMessages = messages.filter(m => {
+        const messageTime = new Date(m.created_at).getTime()
+        const now = Date.now()
+        return now - messageTime < 3600000 // Last hour
+      })
+      
+      let engagementLevel: 'low' | 'medium' | 'high' = 'low'
+      if (recentMessages.length > 10) engagementLevel = 'high'
+      else if (recentMessages.length > 5) engagementLevel = 'medium'
+      
+      const lastMessage = messages[messages.length - 1]
+      const lastActivity = lastMessage 
+        ? `${Math.floor((Date.now() - new Date(lastMessage.created_at).getTime()) / 60000)} min ago`
+        : 'No recent activity'
+      
+      setChatStats({
+        activeUsers: uniqueUsers,
+        messageCount: messages.length,
+        engagementLevel,
+        recentActivity: lastActivity
+      })
+    }
+
+    if (messages.length > 0) {
+      generateAISummary()
+      updateChatStats()
+    }
+  }, [messages])
+
+
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!newMessage.trim() || sending) return
@@ -110,40 +214,152 @@ export const RealTimeChat = ({
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
-      handleSendMessage(e)
+      handleSendMessage(e as React.FormEvent)
     }
   }
 
-  const handlePromoteToRoom = async (roomSpec: any) => {
-    try {
-      const response = await fetch('/api/rooms/promote', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          ...roomSpec,
-          originalChatId: roomId,
-          requestedBy: userId
-        })
-      })
+  // Filter messages based on active filter
+  const getFilteredMessages = () => {
+    if (activeFilter === 'all') return messages
+    
+    return messages.filter(message => {
+      const content = message.content.toLowerCase()
       
-      if (!response.ok) {
-        throw new Error('Failed to submit room promotion request')
+      switch (activeFilter) {
+        case 'hot':
+          return ['urgent', 'important', 'breaking', 'crisis', 'trending'].some(keyword => 
+            content.includes(keyword)
+          )
+        case 'questions':
+          return content.includes('?') || 
+                 ['how', 'what', 'why', 'when', 'where'].some(keyword => content.includes(keyword))
+        case 'ideas':
+          return ['should', 'could', 'what if', 'propose', 'suggest', 'idea'].some(keyword => 
+            content.includes(keyword)
+          )
+        case 'polls':
+          return ['vote', 'choose', 'prefer', 'poll'].some(keyword => content.includes(keyword))
+        default:
+          return true
       }
-      
-      // Could show success message or redirect
-      console.log('Room promotion request submitted successfully')
-    } catch (err) {
-      console.error('Failed to submit room promotion:', err)
+    })
+  }
+
+  // Handle poll creation
+  const handleCreatePoll = (question: string, options: string[]) => {
+    const newPoll: Poll = {
+      id: Date.now().toString(),
+      question,
+      options: options.map((text, index) => ({
+        id: `option-${index}`,
+        text,
+        votes: 0
+      })),
+      totalVotes: 0,
+      createdBy: userId ? `User ${userId.slice(0, 8)}` : 'Anonymous',
+      createdAt: new Date().toISOString()
+    }
+    
+    setPolls(prev => [...prev, newPoll])
+    setShowCreatePoll(false)
+  }
+
+  // Handle poll voting
+  const handlePollVote = (pollId: string, optionId: string) => {
+    setPolls(prev => prev.map(poll => {
+      if (poll.id === pollId) {
+        return {
+          ...poll,
+          options: poll.options.map(option => 
+            option.id === optionId 
+              ? { ...option, votes: option.votes + 1 }
+              : option
+          ),
+          totalVotes: poll.totalVotes + 1,
+          userVote: optionId
+        }
+      }
+      return poll
+    }))
+  }
+
+  // Handle engagement tool actions
+  const handleToolAction = (action: string) => {
+    switch (action) {
+      case 'poll':
+        setShowCreatePoll(true)
+        break
+      case 'image':
+        // TODO: Implement image upload
+        console.log('Image upload clicked')
+        break
+      case 'camera':
+        // TODO: Implement camera capture
+        console.log('Camera capture clicked')
+        break
+      default:
+        break
     }
   }
+
+  // Filter messages based on active filter
+  const getFilteredMessages = () => {
+    if (activeFilter === 'all') return messages
+    
+    const filterKeywords = {
+      hot: ['urgent', 'important', 'breaking', 'crisis', 'trending'],
+      questions: ['how', 'what', 'why', 'when', 'where', '?'],
+      ideas: ['should', 'could', 'what if', 'propose', 'suggest', 'idea'],
+      polls: [] // Polls are handled separately
+    }
+    
+    const keywords = filterKeywords[activeFilter as keyof typeof filterKeywords] || []
+    
+    return messages.filter(message => {
+      const content = message.content.toLowerCase()
+      return keywords.some(keyword => content.includes(keyword))
+    })
+  }
+
+  // Calculate message statistics for filters
+  const getMessageStats = () => {
+    const filterKeywords = {
+      hotTopics: ['urgent', 'important', 'breaking', 'crisis', 'trending'],
+      questions: ['how', 'what', 'why', 'when', 'where', '?'],
+      ideas: ['should', 'could', 'what if', 'propose', 'suggest', 'idea']
+    }
+    
+    const stats = {
+      hotTopics: 0,
+      questions: 0,
+      ideas: 0,
+      polls: polls.length
+    }
+    
+    messages.forEach(message => {
+      const content = message.content.toLowerCase()
+      
+      if (filterKeywords.hotTopics.some(keyword => content.includes(keyword))) {
+        stats.hotTopics++
+      }
+      if (filterKeywords.questions.some(keyword => content.includes(keyword))) {
+        stats.questions++
+      }
+      if (filterKeywords.ideas.some(keyword => content.includes(keyword))) {
+        stats.ideas++
+      }
+    })
+    
+    return stats
+  }
+
+
 
   // Generate chat context for promotion modal
-  const getChatContext = () => {
+  const generateChatContext = () => {
     const uniqueUsers = new Set(messages.map(m => m.user_id)).size
     const recentTopics = messages
-      .slice(-20)
+      .slice(-10)
       .map(m => m.content)
       .join(' ')
       .split(' ')
@@ -158,6 +374,25 @@ export const RealTimeChat = ({
       keyMessages: messages.slice(-5).map(m => m.content)
     }
   }
+
+  // Get filtered and processed messages for display
+  const filteredMessages = getFilteredMessages()
+  const displayMessages = [...filteredMessages]
+  
+  // Insert polls into message stream
+  polls.forEach(poll => {
+    displayMessages.push({
+      id: `poll-${poll.id}`,
+      content: '', // Will be rendered as poll component
+      message_type: 'poll',
+      created_at: poll.createdAt,
+      user_id: poll.createdBy,
+      poll // Add poll data
+    } as ChatMessageData & { poll: Poll })
+  })
+  
+  // Sort by creation time
+  displayMessages.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
 
   if (loading) {
     return (
@@ -184,62 +419,80 @@ export const RealTimeChat = ({
   return (
     <>
       <Card className={cn('flex flex-col', className)}>
-      {/* Header with Promote Button */}
-      <CardHeader className="pb-2">
-        <Flex justify="between" align="center">
-          <CardTitle className="text-lg">Chat Discussion</CardTitle>
-          {messages.length >= 10 && userId && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowPromoteModal(true)}
-              className="text-sm"
-            >
-              🚀 Promote to Room
-            </Button>
-          )}
-        </Flex>
-        {messages.length >= 10 && (
-          <Text variant="caption" className="text-green-600">
-            This conversation is active enough to become a Focus Room!
-          </Text>
-        )}
-      </CardHeader>
+        {/* Enhanced Header */}
+        <EnhancedChatHeader
+          roomName={room?.name || 'Chat Discussion'}
+          aiSummary={aiSummary}
+          stats={chatStats}
+          onPromote={() => setShowPromoteModal(true)}
+          canPromote={messages.length >= 10 && !!userId}
+          topicContext={room?.description ? {
+            originalTitle: room.name,
+            originalContent: room.description,
+            sourceType: 'news' as const
+          } : undefined}
+        />
+        
+        {/* Chat Filters and Tools */}
+        <ChatFiltersAndTools
+          activeFilter={activeFilter}
+          onFilterChange={setActiveFilter}
+          onCreatePoll={() => setShowCreatePoll(true)}
+          onUploadImage={() => console.log('Image upload clicked')}
+          messageStats={getMessageStats()}
+        />
 
-      {/* Messages Area */}
-      <CardContent className="flex-1 p-4 pt-0">
-        <div 
-          className="space-y-4 overflow-y-auto pr-2"
-          style={{ maxHeight }}
-        >
-          {messages.length === 0 ? (
-            <Flex align="center" justify="center" className="h-32">
-              <Text variant="caption" className="text-gray-500">
-                No messages yet. Start the conversation! 💬
-              </Text>
-            </Flex>
-          ) : (
-            messages.map((message) => (
-              <ChatMessage
-                key={message.id}
-                id={message.id}
-                content={message.content}
-                author={{
-                  id: message.user_id || 'anonymous',
-                  name: message.user_id ? `User ${message.user_id.slice(0, 8)}` : 'Anonymous',
-                  avatarUrl: '😊'
-                }}
-                createdAt={new Date(message.created_at)}
-                conversationId={roomId}
-                currentUserId={userId}
-                showActions={false}
-                className="mb-3"
-              />
-            ))
-          )}
-          <div ref={messagesEndRef} />
-        </div>
-      </CardContent>
+        {/* Messages Area */}
+        <CardContent className="flex-1 p-4 pt-0">
+          <div 
+            className="space-y-4 overflow-y-auto pr-2"
+            style={{ maxHeight }}
+          >
+            {displayMessages.length === 0 ? (
+              <Flex align="center" justify="center" className="h-32">
+                <Text variant="caption" className="text-gray-500">
+                  {activeFilter === 'all' 
+                    ? 'No messages yet. Start the conversation! 💬'
+                    : `No ${activeFilter} messages found. Try a different filter.`
+                  }
+                </Text>
+              </Flex>
+            ) : (
+              displayMessages.map((message) => {
+                // Render polls differently
+                if (message.message_type === 'poll' && (message as ChatMessageData & { poll: Poll }).poll) {
+                  return (
+                    <QuickPoll
+                      key={message.id}
+                      poll={(message as ChatMessageData & { poll: Poll }).poll}
+                      onVote={handlePollVote}
+                      currentUserId={userId}
+                    />
+                  )
+                }
+                
+                return (
+                  <ChatMessage
+                    key={message.id}
+                    id={message.id}
+                    content={message.content}
+                    author={{
+                      id: message.user_id || 'anonymous',
+                      name: message.user_id ? `User ${message.user_id.slice(0, 8)}` : 'Anonymous',
+                      avatarUrl: '😊'
+                    }}
+                    createdAt={new Date(message.created_at)}
+                    conversationId={roomId}
+                    currentUserId={userId}
+                    showActions={false}
+                    className="mb-3"
+                  />
+                )
+              })
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+        </CardContent>
 
       {/* Message Input */}
       {userId ? (
@@ -265,9 +518,14 @@ export const RealTimeChat = ({
                 {sending ? '...' : 'Send'}
               </Button>
             </Flex>
-            <Text variant="caption" className="text-gray-500">
-              Press Enter to send, Shift+Enter for new line
-            </Text>
+            <Flex justify="between" align="center">
+              <Text variant="caption" className="text-gray-500">
+                Press Enter to send, Shift+Enter for new line
+              </Text>
+              <Text variant="caption" className="text-gray-500">
+                {activeFilter !== 'all' && `Showing ${filteredMessages.length} ${activeFilter} messages`}
+              </Text>
+            </Flex>
           </form>
         </div>
       ) : (
@@ -281,33 +539,20 @@ export const RealTimeChat = ({
       )}
       </Card>
 
-      {/* Promote to Room Modal */}
+      {/* Promote Modal */}
       {showPromoteModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="p-4">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">Promote Chat to Focus Room</h2>
-                <button 
-                  onClick={() => setShowPromoteModal(false)}
-                  className="text-gray-500 hover:text-gray-800"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-              <UnifiedRoomGenerator
-                entryPoint="chat-promotion"
-                chatContext={getChatContext()}
-                onRoomRequest={handlePromoteToRoom}
-                onClose={() => setShowPromoteModal(false)}
-                isModal={true}
-              />
-            </div>
-          </div>
-        </div>
+        <UnifiedRoomGenerator
+          onClose={() => setShowPromoteModal(false)}
+          chatContext={generateChatContext()}
+        />
       )}
+      
+      {/* Create Poll Modal */}
+      <CreatePollModal
+        isOpen={showCreatePoll}
+        onClose={() => setShowCreatePoll(false)}
+        onCreatePoll={handleCreatePoll}
+      />
     </>
   )
 }

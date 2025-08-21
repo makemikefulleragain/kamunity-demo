@@ -4,15 +4,19 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Container } from '@/components/ui';
 import { cn, a11y } from '@/lib/utils';
+import SmartNotifications from '@/components/demo/SmartNotifications';
 
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navItems = [
     { href: '/', label: 'Home' },
-    { href: '/news', label: 'The News' },
+    { href: '/news', label: 'News' },
     { href: '/chat', label: 'Chat' },
-    { href: '/rooms', label: 'Rooms' }
+    { href: '/rooms', label: 'Rooms' },
+    { href: '/clubs', label: 'Clubs' },
+    { href: '/communities', label: 'Communities' },
+    { href: '/values-exchange', label: 'Values Exchange' }
   ];
 
   return (
@@ -48,6 +52,9 @@ const Header = () => {
                 {item.label}
               </Link>
             ))}
+            
+            {/* Smart Notifications */}
+            <SmartNotifications className="mr-2" />
           </div>
 
           {/* Mobile Menu Button */}
@@ -102,6 +109,7 @@ const Header = () => {
           </div>
         )}
       </Container>
+
     </header>
   );
 };

@@ -6,7 +6,7 @@
 export interface DemoAnalyticsEvent {
   userId?: string
   sessionId: string
-  eventType: 'page_view' | 'button_click' | 'interest_capture' | 'room_generation' | 'pricing_feedback' | 'engagement_action'
+  eventType: 'page_view' | 'button_click' | 'interest_capture' | 'room_generation' | 'pricing_feedback' | 'engagement_action' | 'user_login' | 'user_signup' | 'user_logout' | 'auth_error'
   eventData: {
     page?: string
     action?: string
@@ -16,6 +16,9 @@ export interface DemoAnalyticsEvent {
     engagementLevel?: 'low' | 'medium' | 'high'
     timestamp: string
     userAgent?: string
+    method?: string
+    username?: string
+    error?: string
   }
 }
 
@@ -52,6 +55,21 @@ class DemoAnalytics {
       }
     }
     this.loadStoredData()
+    // Auto-detect Supabase user if available
+    this.detectSupabaseUser()
+  }
+
+  private async detectSupabaseUser() {
+    try {
+      // Import Supabase client dynamically to avoid SSR issues
+      const { supabase } = await import('@/lib/supabase/client')
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.user) {
+        this.setUserId(session.user.id)
+      }
+    } catch (error) {
+      console.warn('Could not detect Supabase user:', error)
+    }
   }
 
   private generateSessionId(): string {
@@ -167,7 +185,11 @@ class DemoAnalytics {
 
   captureInterests(interests: Partial<UserInterests>) {
     this.interests = { ...this.interests, ...interests }
-    this.trackEvent('interest_capture', { interests: Object.values(interests).flat() })
+    // Extract only string array values for tracking
+    const interestStrings = Object.entries(interests)
+      .filter(([_, value]) => Array.isArray(value))
+      .flatMap(([_, value]) => value as string[])
+    this.trackEvent('interest_capture', { interests: interestStrings })
     this.saveData()
   }
 
@@ -232,6 +254,11 @@ export const trackRoomGeneration = (roomScope: string) => {
   demoAnalytics.trackEvent('room_generation', { roomScope })
 }
 
-export const trackPricingFeedback = (pricingChoice: string) => {
+export function trackPricingFeedback(pricingChoice: string) {
   demoAnalytics.trackEvent('pricing_feedback', { pricingChoice })
+}
+
+// Generic event tracking function for authentication and other events
+export function trackDemoEvent(eventType: DemoAnalyticsEvent['eventType'], eventData: Partial<DemoAnalyticsEvent['eventData']>) {
+  demoAnalytics.trackEvent(eventType, eventData)
 }

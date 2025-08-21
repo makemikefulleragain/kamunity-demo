@@ -18,46 +18,7 @@ import SummaryPanel from '@/components/summaries/SummaryPanel';
 import SimpleNewsCard from '@/components/news/SimpleNewsCard';
 import { trackPageView, trackEngagement } from '@/lib/demo/analytics';
 import { Toaster } from 'react-hot-toast';
-
-// Mock news data for immediate testing
-const mockNewsData = [
-  {
-    id: '1',
-    title: 'Community Spotlight: Local Tech Meetup Grows to 500+ Members',
-    content: 'What started as a small gathering of 12 developers in a coffee shop has transformed into the largest tech community in the region.',
-    summary: 'Local tech meetup grows from 12 to 500+ members, launches 3 startups',
-    content_type: 'kamunity_story',
-    category: 'Community Success',
-    tags: ['tech', 'meetup', 'community', 'startup'],
-    engagement_score: 45,
-    comment_count: 8,
-    created_at: new Date().toISOString()
-  },
-  {
-    id: '2',
-    title: 'Room Summary: "Climate Action Now" - Weekly Highlights',
-    content: 'This week in the Climate Action Now room: Members organized a city-wide tree planting event (127 trees planted!), shared 15 sustainable living tips.',
-    summary: 'Tree planting event, sustainability tips, carbon calculator milestone',
-    content_type: 'room_summary',
-    category: 'Environment',
-    tags: ['climate', 'environment', 'action', 'community'],
-    engagement_score: 32,
-    comment_count: 12,
-    created_at: new Date(Date.now() - 86400000).toISOString()
-  },
-  {
-    id: '3',
-    title: 'Breaking: New Partnership with Local Universities',
-    content: 'Kamunity announces partnerships with 5 local universities to create dedicated spaces for student-led initiatives.',
-    summary: 'University partnerships enable student-led initiatives and mentorship',
-    content_type: 'external_story',
-    category: 'Partnerships',
-    tags: ['education', 'university', 'students', 'mentorship'],
-    engagement_score: 67,
-    comment_count: 15,
-    created_at: new Date(Date.now() - 172800000).toISOString()
-  }
-];
+import { newsSeeds } from '@/data/newsSeeds';
 
 const NewsPage = () => {
   // Handle filter changes from SummaryPanel
@@ -170,26 +131,33 @@ const NewsPage = () => {
           </div>
 
           <Grid cols={1} responsive={{ md: 2, lg: 3 }} gap="lg">
-            {mockNewsData.map((item) => (
-              <SimpleNewsCard key={item.id} newsItem={item} />
+            {newsSeeds.map((item) => (
+              <SimpleNewsCard key={item.id} newsItem={{
+                id: item.id,
+                title: item.title,
+                content: item.description,
+                summary: item.description.substring(0, 100) + '...',
+                content_type: 'community_story',
+                category: item.category,
+                tags: item.tags,
+                engagement_score: item.engagement,
+                comment_count: item.commentCount,
+                created_at: item.createdAt
+              }} />
             ))}
           </Grid>
 
-          {/* Demo Instructions */}
-          <div className="mt-12 p-6 bg-blue-50 rounded-lg">
-            <Heading level={3} className="text-lg font-semibold mb-3 text-blue-900">
-              🧪 News System Demo
+          {/* Golden Threads Demo */}
+          <div className="mt-12 p-6 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg">
+            <Heading level={3} className="text-lg font-semibold mb-3 text-green-700">
+              🧵 Golden Threads in Action
             </Heading>
-            <div className="text-sm text-blue-800 space-y-2">
-              <p><strong>✅ Working:</strong> News page now loads without authentication</p>
-              <p><strong>📰 Content:</strong> Mock news items showing different content types</p>
-              <p><strong>🎯 Next Steps:</strong></p>
-              <ul className="list-disc list-inside ml-4 space-y-1">
-                <li>Connect to database for real content</li>
-                <li>Add expandable comments functionality</li>
-                <li>Implement chat promotion workflow</li>
-                <li>Add real-time updates</li>
-              </ul>
+            <div className="text-sm text-green-600 space-y-2">
+              <p><strong>🌱 Parks & Gardens:</strong> Follow community garden stories from news to clubs</p>
+              <p><strong>🎉 Street Events:</strong> Trace block parties evolving into cultural networks</p>
+              <p><strong>🏛️ Civics:</strong> See how budget discussions become democratic movements</p>
+              <p><strong>🤝 Social Support:</strong> Watch mutual aid grow into care confederations</p>
+              <p className="font-medium text-green-700 mt-3">Each story connects to chats, rooms, clubs, and communities. Discover the progression!</p>
             </div>
           </div>
         </Container>
