@@ -78,12 +78,15 @@ class DemoAnalytics {
 
   private loadStoredData() {
     try {
-      const stored = localStorage.getItem('kamunity_demo_analytics')
-      if (stored) {
-        const data = JSON.parse(stored)
-        this.sessionId = data.sessionId || this.sessionId
-        this.userId = data.userId
-        this.interests = { ...this.interests, ...data.interests }
+      // Check if we're in a browser environment
+      if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+        const stored = localStorage.getItem('kamunity_demo_analytics')
+        if (stored) {
+          const data = JSON.parse(stored)
+          this.sessionId = data.sessionId || this.sessionId
+          this.userId = data.userId
+          this.interests = { ...this.interests, ...data.interests }
+        }
       }
     } catch (error) {
       console.warn('Failed to load demo analytics data:', error)
@@ -92,11 +95,14 @@ class DemoAnalytics {
 
   private saveData() {
     try {
-      localStorage.setItem('kamunity_demo_analytics', JSON.stringify({
-        sessionId: this.sessionId,
-        userId: this.userId,
-        interests: this.interests
-      }))
+      // Check if we're in a browser environment
+      if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+        localStorage.setItem('kamunity_demo_analytics', JSON.stringify({
+          sessionId: this.sessionId,
+          userId: this.userId,
+          interests: this.interests
+        }))
+      }
     } catch (error) {
       console.warn('Failed to save demo analytics data:', error)
     }
@@ -115,7 +121,7 @@ class DemoAnalytics {
       eventData: {
         ...eventData,
         timestamp: new Date().toISOString(),
-        userAgent: navigator.userAgent
+        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'server'
       }
     }
 
@@ -131,13 +137,16 @@ class DemoAnalytics {
 
   private storeEvent(event: DemoAnalyticsEvent) {
     try {
-      const events = JSON.parse(localStorage.getItem('kamunity_demo_events') || '[]')
-      events.push(event)
-      // Keep only last 100 events for demo
-      if (events.length > 100) {
-        events.splice(0, events.length - 100)
+      // Check if we're in a browser environment
+      if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+        const events = JSON.parse(localStorage.getItem('kamunity_demo_events') || '[]')
+        events.push(event)
+        // Keep only last 100 events for demo
+        if (events.length > 100) {
+          events.splice(0, events.length - 100)
+        }
+        localStorage.setItem('kamunity_demo_events', JSON.stringify(events))
       }
-      localStorage.setItem('kamunity_demo_events', JSON.stringify(events))
     } catch (error) {
       console.warn('Failed to store demo event:', error)
     }
@@ -234,31 +243,78 @@ class DemoAnalytics {
   }
 }
 
-// Singleton instance for demo
-export const demoAnalytics = new DemoAnalytics()
+// Create singleton instance only in browser environment
+let demoAnalyticsInstance: DemoAnalytics | null = null
+
+const getDemoAnalytics = () => {
+  if (typeof window !== 'undefined') {
+    if (!demoAnalyticsInstance) {
+      demoAnalyticsInstance = new DemoAnalytics()
+    }
+    return demoAnalyticsInstance
+  }
+  // Return a dummy object for server-side rendering
+  return {
+    trackEvent: () => {},
+    captureInterests: () => {},
+    getInterests: () => ({
+      passionAreas: [],
+      communityTypes: [],
+      engagementPreferences: [],
+      topicInterests: [],
+      behaviorPatterns: {
+        newsEngagement: 0,
+        chatParticipation: 0,
+        roomCreation: 0,
+        commentFrequency: 0
+      }
+    }),
+    getBehaviorSummary: () => ({
+      sessionId: '',
+      userId: undefined,
+      interests: {
+        passionAreas: [],
+        communityTypes: [],
+        engagementPreferences: [],
+        topicInterests: [],
+        behaviorPatterns: {
+          newsEngagement: 0,
+          chatParticipation: 0,
+          roomCreation: 0,
+          commentFrequency: 0
+        }
+      },
+      engagementLevel: 'low' as const,
+      recommendedActions: []
+    }),
+    setUserId: () => {}
+  }
+}
+
+export const demoAnalytics = getDemoAnalytics()
 
 // Convenience functions
 export const trackPageView = (page: string) => {
-  demoAnalytics.trackEvent('page_view', { page })
+  getDemoAnalytics().trackEvent('page_view', { page })
 }
 
 export const trackButtonClick = (action: string, page?: string) => {
-  demoAnalytics.trackEvent('button_click', { action, page })
+  getDemoAnalytics().trackEvent('button_click', { action, page })
 }
 
 export const trackEngagement = (action: string, engagementLevel?: 'low' | 'medium' | 'high') => {
-  demoAnalytics.trackEvent('engagement_action', { action, engagementLevel })
+  getDemoAnalytics().trackEvent('engagement_action', { action, engagementLevel })
 }
 
 export const trackRoomGeneration = (roomScope: string) => {
-  demoAnalytics.trackEvent('room_generation', { roomScope })
+  getDemoAnalytics().trackEvent('room_generation', { roomScope })
 }
 
 export function trackPricingFeedback(pricingChoice: string) {
-  demoAnalytics.trackEvent('pricing_feedback', { pricingChoice })
+  getDemoAnalytics().trackEvent('pricing_feedback', { pricingChoice })
 }
 
 // Generic event tracking function for authentication and other events
 export function trackDemoEvent(eventType: DemoAnalyticsEvent['eventType'], eventData: Partial<DemoAnalyticsEvent['eventData']>) {
-  demoAnalytics.trackEvent(eventType, eventData)
+  getDemoAnalytics().trackEvent(eventType, eventData)
 }

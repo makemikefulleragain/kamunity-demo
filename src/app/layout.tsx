@@ -4,6 +4,7 @@ import './globals.css'
 import Header from '@/components/Header'
 import FloatingSurvey from '@/components/demo/FloatingSurvey'
 import ErrorBoundary from '@/components/ErrorBoundary'
+import { Providers } from './providers'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -20,17 +21,19 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} antialiased`} suppressHydrationWarning={true}>
-        <ErrorBoundary componentName="Header">
-          <Header />
-        </ErrorBoundary>
-        <main className="min-h-screen">
-          <ErrorBoundary componentName="Main Content">
-            {children}
+        <Providers>
+          <ErrorBoundary componentName="Header">
+            <Header />
           </ErrorBoundary>
-        </main>
-        <ErrorBoundary componentName="FloatingSurvey">
-          <FloatingSurvey />
-        </ErrorBoundary>
+          <main className="min-h-screen">
+            <ErrorBoundary componentName="Main Content">
+              {children}
+            </ErrorBoundary>
+          </main>
+          <ErrorBoundary componentName="FloatingSurvey">
+            <FloatingSurvey />
+          </ErrorBoundary>
+        </Providers>
       </body>
     </html>
   );
