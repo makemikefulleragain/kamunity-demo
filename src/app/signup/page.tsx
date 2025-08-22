@@ -7,6 +7,9 @@ import { useAuth } from '@/lib/auth/auth-context'
 import { Container, Section, Card, CardContent, Heading, Text, Button } from '@/components/ui'
 import { EMOJI_TYPES } from '@/lib/supabase/types'
 
+// Force dynamic rendering to prevent prerendering errors
+export const dynamic = 'force-dynamic'
+
 export default function SignUpPage() {
   const router = useRouter()
   const { signUp } = useAuth()
@@ -67,7 +70,7 @@ export default function SignUpPage() {
         // Success - redirect to main app
         router.push('/news')
       }
-    } catch (err) {
+    } catch {
       setError('An unexpected error occurred')
     } finally {
       setLoading(false)

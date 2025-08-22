@@ -6,6 +6,9 @@ import Link from 'next/link'
 import { useAuth } from '@/lib/auth/auth-context'
 import { Container, Section, Card, CardContent, Heading, Text, Button } from '@/components/ui'
 
+// Force dynamic rendering to prevent prerendering errors
+export const dynamic = 'force-dynamic'
+
 export default function LoginPage() {
   const router = useRouter()
   const { signIn } = useAuth()
@@ -30,7 +33,7 @@ export default function LoginPage() {
         // Success - redirect to main app
         router.push('/news')
       }
-    } catch (err) {
+    } catch {
       setError('An unexpected error occurred')
     } finally {
       setLoading(false)
@@ -109,7 +112,7 @@ export default function LoginPage() {
 
               <div className="mt-6 text-center">
                 <Text color="muted">
-                  Don't have an account?{' '}
+                  Don&apos;t have an account?{' '}
                   <Link href="/signup" className="text-primary-600 hover:text-primary-700 font-medium">
                     Join Kamunity
                   </Link>

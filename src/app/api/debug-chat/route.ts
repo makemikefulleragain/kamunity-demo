@@ -30,7 +30,8 @@ export async function GET() {
     
     // Test 2: Try to insert a simple room
     console.log('Test 2: Attempting to insert test room...')
-    const testRoomId = `test_${Date.now()}`
+    // Generate a proper UUID v4
+    const testRoomId = crypto.randomUUID()
     const { data: newRoom, error: insertError } = await supabase
       .from('rooms')
       .insert({
