@@ -1,9 +1,10 @@
 {
-  "/chat/page": "app/chat/page.js",
   "/news/page": "app/news/page.js",
-  "/rooms/page": "app/rooms/page.js",
   "/communities/page": "app/communities/page.js",
-  "/page": "app/page.js",
+  "/rooms/page": "app/rooms/page.js",
+  "/chat/[id]/page": "app/chat/[id]/page.js",
   "/api/demo/analytics/route": "app/api/demo/analytics/route.js",
-  "/clubs/page": "app/clubs/page.js"
+  "/chat/page": "app/chat/page.js",
+  "/clubs/page": "app/clubs/page.js",
+  "/_not-found/page": "app/_not-found/page.js"
 }
