@@ -6,7 +6,7 @@
 export interface DemoAnalyticsEvent {
   userId?: string
   sessionId: string
-  eventType: 'page_view' | 'button_click' | 'interest_capture' | 'room_generation' | 'pricing_feedback' | 'engagement_action' | 'user_login' | 'user_signup' | 'user_logout' | 'auth_error'
+  eventType: 'page_view' | 'button_click' | 'interest_capture' | 'room_generation' | 'pricing_feedback' | 'engagement_action' | 'user_login' | 'user_signup' | 'user_logout' | 'auth_error' | 'perspective_choice'
   eventData: {
     page?: string
     action?: string
@@ -19,6 +19,9 @@ export interface DemoAnalyticsEvent {
     method?: string
     username?: string
     error?: string
+    capability?: 'low' | 'medium' | 'high' | 'expert' | 'neutral'
+    destination?: string
+    perspectiveId?: string
   }
 }
 
@@ -317,4 +320,14 @@ export function trackPricingFeedback(pricingChoice: string) {
 // Generic event tracking function for authentication and other events
 export function trackDemoEvent(eventType: DemoAnalyticsEvent['eventType'], eventData: Partial<DemoAnalyticsEvent['eventData']>) {
   getDemoAnalytics().trackEvent(eventType, eventData)
+}
+
+// Track perspective choice from Welcome page
+export function trackPerspectiveChoice(perspectiveId: string, capability: string, destination: string) {
+  getDemoAnalytics().trackEvent('perspective_choice', { 
+    perspectiveId, 
+    capability: capability as 'low' | 'medium' | 'high' | 'expert' | 'neutral',
+    destination,
+    page: 'welcome'
+  })
 }

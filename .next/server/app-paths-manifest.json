@@ -1,9 +1,7 @@
 {
-  "/rooms/page": "app/rooms/page.js",
-  "/create-room/page": "app/create-room/page.js",
   "/api/demo/analytics/route": "app/api/demo/analytics/route.js",
-  "/rooms/[id]/page": "app/rooms/[id]/page.js",
-  "/chat/page": "app/chat/page.js",
-  "/chat/[id]/page": "app/chat/[id]/page.js",
-  "/news/page": "app/news/page.js"
+  "/demo/page": "app/demo/page.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/rooms/page": "app/rooms/page.js",
+  "/welcome/page": "app/welcome/page.js"
 }
