@@ -1,18 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-// import { createClient } from '@supabase/supabase-js'
-// import { Database } from '@/lib/supabase/types'
-
-// TODO: Implement actual Supabase integration
-// const supabase = createClient<Database>(
-//   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-//   process.env.SUPABASE_SERVICE_ROLE_KEY!
-// )
+import { createClient } from '@/lib/supabase/server'
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    const supabase = createClient()
     const { data: room, error } = await supabase
       .from('focus_rooms')
       .select('*')
@@ -39,6 +33,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    const supabase = createClient()
     const body = await request.json()
     const { name, purpose } = body
 
@@ -65,6 +60,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    const supabase = createClient()
     const { error } = await supabase
       .from('focus_rooms')
       .delete()

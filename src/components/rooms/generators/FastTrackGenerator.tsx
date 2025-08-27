@@ -172,6 +172,14 @@ export default function FastTrackGenerator({ onComplete, onCancel, initialData, 
           {/* Error Messages */}
           {errors.length > 0 && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+              <ul className="text-sm text-red-700 space-y-1">
+                {errors.map((error, index) => (
+                  <li key={index} className="flex items-center gap-2">
+                    <span className="text-red-500">•</span>
+                    {error}
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
 

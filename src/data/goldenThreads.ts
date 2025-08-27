@@ -213,6 +213,14 @@ export const goldenThreads: GoldenThread[] = [
         { id: 'qa5', label: 'Mentor Match', icon: '🤝', action: 'match-mentor' }
       ],
       createdAt: new Date('2025-08-11')
+    },
+    club: {
+      id: 'club-tech-1',
+      name: 'Code Mentors Alliance',
+      description: 'A collaborative network of tech professionals mentoring the next generation of developers through hands-on learning and career guidance',
+      memberRooms: ['room-tech-1', 'room-tech-2', 'room-tech-3'],
+      totalMembers: 156,
+      impactScore: 3200
     }
   },
   {
@@ -278,6 +286,14 @@ export const goldenThreads: GoldenThread[] = [
         { id: 'qa5', label: 'Crisis Resources', icon: '🆘', action: 'crisis-help' }
       ],
       createdAt: new Date('2025-08-09')
+    },
+    club: {
+      id: 'club-health-1',
+      name: 'Community Wellness Collective',
+      description: 'A supportive network of mental health advocates, peer counselors, and wellness practitioners creating safe spaces for healing and growth',
+      memberRooms: ['room-health-1', 'room-health-2', 'room-health-3'],
+      totalMembers: 89,
+      impactScore: 2800
     }
   },
   {
@@ -342,6 +358,14 @@ export const goldenThreads: GoldenThread[] = [
         { id: 'qa5', label: 'Get Help', icon: '❓', action: 'ask-help' }
       ],
       createdAt: new Date('2025-08-07')
+    },
+    club: {
+      id: 'club-edu-1',
+      name: 'Student Tech Leaders',
+      description: 'A student-driven network empowering young people to learn, teach, and innovate with technology across schools and communities',
+      memberRooms: ['room-edu-1', 'room-edu-2', 'room-edu-3'],
+      totalMembers: 98,
+      impactScore: 2100
     }
   },
   {
@@ -406,6 +430,476 @@ export const goldenThreads: GoldenThread[] = [
         { id: 'qa5', label: 'Resources', icon: '📋', action: 'view-resources' }
       ],
       createdAt: new Date('2025-08-13')
+    },
+    club: {
+      id: 'club-social-1',
+      name: 'Neighborhood Care Network',
+      description: 'A community-driven support system connecting neighbors to provide mutual aid, elder care, and emergency assistance through organized volunteer networks',
+      memberRooms: ['room-social-1', 'room-social-2', 'room-social-3'],
+      totalMembers: 145,
+      impactScore: 2900
+    }
+  },
+  {
+    id: 'gt-6',
+    title: 'Local Arts Renaissance',
+    category: 'social',
+    news: {
+      id: 'news-arts-1',
+      title: 'Community Artists Transform Abandoned Buildings into Cultural Hubs',
+      content: 'Local artists and community members are revitalizing neglected spaces, creating galleries, performance venues, and creative workshops...',
+      summary: 'Artists and residents collaborate to create vibrant cultural spaces from abandoned buildings',
+      publishedAt: new Date('2025-08-14'),
+      engagement: 634,
+      comments: 38
+    },
+    chat: {
+      id: 'chat-arts-1',
+      title: '🎨 Bringing Art to Every Neighborhood',
+      participants: 41,
+      messages: [
+        {
+          id: 'a1',
+          author: 'Sofia Martinez',
+          content: 'The old warehouse on Main Street would make an amazing community art center. Who has connections with the property owner?',
+          timestamp: new Date('2025-08-14T16:00:00'),
+          reactions: [{ emoji: '🎨', count: 15 }]
+        },
+        {
+          id: 'a2',
+          author: 'Alex Chen',
+          content: 'I know the owner! They\'ve been looking for community partners. Let me set up a meeting.',
+          timestamp: new Date('2025-08-14T16:45:00'),
+          reactions: [{ emoji: '🙌', count: 20 }]
+        }
+      ],
+      createdAt: new Date('2025-08-14T15:00:00')
+    },
+    room: {
+      id: 'room-arts-1',
+      name: 'Creative Community Collective',
+      description: 'Transforming neighborhoods through collaborative art projects, cultural programming, and creative space development',
+      objectives: [
+        'Establish 3 community art spaces',
+        'Launch monthly cultural events',
+        'Create artist residency program',
+        'Develop youth arts education',
+        'Build neighborhood mural project'
+      ],
+      members: 52,
+      impactScore: 890,
+      quickActions: [
+        { id: 'qa1', label: 'Space Scouting', icon: '🏢', action: 'scout-spaces' },
+        { id: 'qa2', label: 'Artist Network', icon: '👥', action: 'connect-artists' },
+        { id: 'qa3', label: 'Event Planning', icon: '🎭', action: 'plan-events' },
+        { id: 'qa4', label: 'Funding Search', icon: '💰', action: 'find-funding' },
+        { id: 'qa5', label: 'Community Outreach', icon: '📢', action: 'outreach' }
+      ],
+      createdAt: new Date('2025-08-15')
+    },
+    club: {
+      id: 'club-arts-1',
+      name: 'Cultural Renaissance Alliance',
+      description: 'A vibrant federation of artists, cultural workers, and community advocates transforming neighborhoods through creative expression and cultural programming',
+      memberRooms: ['room-arts-1', 'room-arts-2', 'room-arts-3'],
+      totalMembers: 198,
+      impactScore: 3600
+    }
+  },
+  {
+    id: 'gt-7',
+    title: 'Community Safety Initiative',
+    category: 'social',
+    news: {
+      id: 'news-safety-1',
+      title: 'Community-Led Safety Programs Reduce Crime Through Connection',
+      content: 'Neighbors are organizing walking groups, community watch programs, and conflict resolution circles to create safer, more connected communities...',
+      summary: 'Community-based safety initiatives build trust and reduce crime through neighbor connections',
+      publishedAt: new Date('2025-08-11'),
+      engagement: 892,
+      comments: 67
+    },
+    chat: {
+      id: 'chat-safety-1',
+      title: '🛡️ Building Safer Communities Together',
+      participants: 38,
+      messages: [
+        {
+          id: 's1',
+          author: 'Maria Rodriguez',
+          content: 'The evening walking group has been amazing! Crime is down and we all know our neighbors now.',
+          timestamp: new Date('2025-08-11T19:00:00'),
+          reactions: [{ emoji: '👏', count: 25 }]
+        },
+        {
+          id: 's2',
+          author: 'David Thompson',
+          content: 'Can we expand to more neighborhoods? I\'d love to help organize in the east side.',
+          timestamp: new Date('2025-08-11T19:30:00'),
+          reactions: [{ emoji: '🤝', count: 18 }]
+        }
+      ],
+      createdAt: new Date('2025-08-11T18:00:00')
+    },
+    room: {
+      id: 'room-safety-1',
+      name: 'Community Safety Network',
+      description: 'Building safer neighborhoods through community connection, conflict resolution, and collaborative safety initiatives',
+      objectives: [
+        'Organize neighborhood walking groups',
+        'Train community mediators',
+        'Establish safety communication network',
+        'Create youth engagement programs',
+        'Build police-community dialogue'
+      ],
+      members: 67,
+      impactScore: 1200,
+      quickActions: [
+        { id: 'qa1', label: 'Schedule Walks', icon: '🚶', action: 'schedule-walks' },
+        { id: 'qa2', label: 'Safety Report', icon: '📋', action: 'safety-report' },
+        { id: 'qa3', label: 'Mediation Training', icon: '🕊️', action: 'mediation-training' },
+        { id: 'qa4', label: 'Community Meeting', icon: '🏛️', action: 'community-meeting' },
+        { id: 'qa5', label: 'Resource Sharing', icon: '📚', action: 'share-resources' }
+      ],
+      createdAt: new Date('2025-08-12')
+    },
+    club: {
+      id: 'club-safety-1',
+      name: 'Neighborhood Guardian Alliance',
+      description: 'A community-driven network focused on creating safer neighborhoods through connection, education, and collaborative safety initiatives',
+      memberRooms: ['room-safety-1', 'room-safety-2', 'room-safety-3'],
+      totalMembers: 178,
+      impactScore: 3100
+    }
+  },
+  {
+    id: 'gt-8',
+    title: 'Small Business Support Network',
+    category: 'social',
+    news: {
+      id: 'news-business-1',
+      title: 'Local Entrepreneurs Create Mutual Support Network for Small Businesses',
+      content: 'Small business owners are forming cooperatives, sharing resources, and creating community-supported commerce initiatives...',
+      summary: 'Local entrepreneurs build mutual aid networks to support small business growth and community economic development',
+      publishedAt: new Date('2025-08-13'),
+      engagement: 567,
+      comments: 42
+    },
+    chat: {
+      id: 'chat-business-1',
+      title: '🏪 Supporting Local Business Together',
+      participants: 33,
+      messages: [
+        {
+          id: 'b1',
+          author: 'Carmen Silva',
+          content: 'My restaurant could share bulk purchasing with other food businesses. Anyone interested in a buying cooperative?',
+          timestamp: new Date('2025-08-13T14:00:00'),
+          reactions: [{ emoji: '🤝', count: 12 }]
+        },
+        {
+          id: 'b2',
+          author: 'Mike Johnson',
+          content: 'Yes! My café would love to join. We could also cross-promote each other\'s businesses.',
+          timestamp: new Date('2025-08-13T14:30:00'),
+          reactions: [{ emoji: '💡', count: 15 }]
+        }
+      ],
+      createdAt: new Date('2025-08-13T13:00:00')
+    },
+    room: {
+      id: 'room-business-1',
+      name: 'Local Commerce Collective',
+      description: 'Supporting small businesses through resource sharing, cooperative purchasing, and community-supported commerce initiatives',
+      objectives: [
+        'Form purchasing cooperatives',
+        'Create business mentorship network',
+        'Launch local currency program',
+        'Organize community markets',
+        'Develop shared workspace'
+      ],
+      members: 45,
+      impactScore: 780,
+      quickActions: [
+        { id: 'qa1', label: 'Coop Planning', icon: '🤝', action: 'plan-cooperative' },
+        { id: 'qa2', label: 'Mentor Match', icon: '👨‍🏫', action: 'mentor-match' },
+        { id: 'qa3', label: 'Market Events', icon: '🛒', action: 'plan-market' },
+        { id: 'qa4', label: 'Resource Share', icon: '📦', action: 'share-resources' },
+        { id: 'qa5', label: 'Workspace Tour', icon: '🏢', action: 'workspace-tour' }
+      ],
+      createdAt: new Date('2025-08-14')
+    },
+    club: {
+      id: 'club-business-1',
+      name: 'Community Commerce Alliance',
+      description: 'A cooperative network of local entrepreneurs building community wealth through mutual support, resource sharing, and collaborative business development',
+      memberRooms: ['room-business-1', 'room-business-2', 'room-business-3'],
+      totalMembers: 134,
+      impactScore: 2600
+    }
+  },
+  {
+    id: 'gt-9',
+    title: 'Senior Community Connection',
+    category: 'social',
+    news: {
+      id: 'news-senior-1',
+      title: 'Intergenerational Programs Bridge Age Gaps and Combat Isolation',
+      content: 'Community programs connecting seniors with younger generations are reducing isolation while sharing wisdom and skills across age groups...',
+      summary: 'Intergenerational programs connect seniors and youth, reducing isolation and fostering community wisdom sharing',
+      publishedAt: new Date('2025-08-09'),
+      engagement: 445,
+      comments: 31
+    },
+    chat: {
+      id: 'chat-senior-1',
+      title: '👴👵 Bridging Generations in Our Community',
+      participants: 26,
+      messages: [
+        {
+          id: 'sr1',
+          author: 'Eleanor Watson',
+          content: 'I\'d love to teach young people about traditional cooking. My grandmother\'s recipes shouldn\'t be lost!',
+          timestamp: new Date('2025-08-09T15:00:00'),
+          reactions: [{ emoji: '👵', count: 18 }]
+        },
+        {
+          id: 'sr2',
+          author: 'Tyler Martinez',
+          content: 'That sounds amazing! I could help seniors learn to use smartphones and social media in exchange.',
+          timestamp: new Date('2025-08-09T15:30:00'),
+          reactions: [{ emoji: '📱', count: 14 }]
+        }
+      ],
+      createdAt: new Date('2025-08-09T14:00:00')
+    },
+    room: {
+      id: 'room-senior-1',
+      name: 'Wisdom Exchange Hub',
+      description: 'Connecting generations through skill sharing, storytelling, and mutual support programs that honor senior wisdom while embracing new perspectives',
+      objectives: [
+        'Launch intergenerational skill workshops',
+        'Create senior tech support program',
+        'Establish storytelling circles',
+        'Organize community garden mentorship',
+        'Build transportation support network'
+      ],
+      members: 38,
+      impactScore: 650,
+      quickActions: [
+        { id: 'qa1', label: 'Skill Workshop', icon: '🛠️', action: 'plan-workshop' },
+        { id: 'qa2', label: 'Tech Support', icon: '💻', action: 'tech-help' },
+        { id: 'qa3', label: 'Story Circle', icon: '📖', action: 'story-circle' },
+        { id: 'qa4', label: 'Transport Help', icon: '🚗', action: 'transport-help' },
+        { id: 'qa5', label: 'Social Events', icon: '🎉', action: 'social-events' }
+      ],
+      createdAt: new Date('2025-08-10')
+    },
+    club: {
+      id: 'club-senior-1',
+      name: 'Generations United Collective',
+      description: 'A vibrant community network celebrating the wisdom of seniors while fostering meaningful connections across all age groups through shared learning and mutual support',
+      memberRooms: ['room-senior-1', 'room-senior-2', 'room-senior-3'],
+      totalMembers: 112,
+      impactScore: 2200
+    }
+  },
+  {
+    id: 'gt-10',
+    title: 'Community Food Security',
+    category: 'social',
+    news: {
+      id: 'news-food-1',
+      title: 'Neighborhood Food Networks Ensure No One Goes Hungry',
+      content: 'Community-organized food pantries, community kitchens, and mutual aid networks are addressing food insecurity through grassroots organizing...',
+      summary: 'Grassroots food networks provide community-controlled solutions to food insecurity and hunger',
+      publishedAt: new Date('2025-08-07'),
+      engagement: 723,
+      comments: 56
+    },
+    chat: {
+      id: 'chat-food-1',
+      title: '🍽️ Building Food Security Together',
+      participants: 44,
+      messages: [
+        {
+          id: 'f1',
+          author: 'Rosa Gonzalez',
+          content: 'Our community kitchen is feeding 200 families a week! We need more volunteers for meal prep.',
+          timestamp: new Date('2025-08-07T17:00:00'),
+          reactions: [{ emoji: '❤️', count: 32 }]
+        },
+        {
+          id: 'f2',
+          author: 'Ahmed Hassan',
+          content: 'I can help with cooking and my restaurant can donate ingredients. Food is a human right!',
+          timestamp: new Date('2025-08-07T17:30:00'),
+          reactions: [{ emoji: '🙏', count: 28 }]
+        }
+      ],
+      createdAt: new Date('2025-08-07T16:00:00')
+    },
+    room: {
+      id: 'room-food-1',
+      name: 'Community Nourishment Network',
+      description: 'Ensuring food security through community kitchens, food pantries, urban agriculture, and mutual aid food distribution systems',
+      objectives: [
+        'Operate 5 community food pantries',
+        'Run weekly community kitchen',
+        'Establish food rescue program',
+        'Create community composting system',
+        'Launch nutrition education workshops'
+      ],
+      members: 73,
+      impactScore: 1400,
+      quickActions: [
+        { id: 'qa1', label: 'Meal Prep', icon: '🍳', action: 'meal-prep' },
+        { id: 'qa2', label: 'Food Rescue', icon: '🚚', action: 'food-rescue' },
+        { id: 'qa3', label: 'Pantry Stock', icon: '📦', action: 'stock-pantry' },
+        { id: 'qa4', label: 'Nutrition Class', icon: '🥗', action: 'nutrition-class' },
+        { id: 'qa5', label: 'Volunteer Coord', icon: '👥', action: 'coordinate-volunteers' }
+      ],
+      createdAt: new Date('2025-08-08')
+    },
+    club: {
+      id: 'club-food-1',
+      name: 'Food Justice Collective',
+      description: 'A community-driven network addressing food insecurity through mutual aid, urban agriculture, and community-controlled food systems that nourish neighborhoods',
+      memberRooms: ['room-food-1', 'room-food-2', 'room-food-3'],
+      totalMembers: 203,
+      impactScore: 4100
+    }
+  },
+  {
+    id: 'gt-11',
+    title: 'Climate Action Network',
+    category: 'environmental',
+    news: {
+      id: 'news-climate-1',
+      title: 'Grassroots Climate Groups Drive Local Environmental Change',
+      content: 'Community-led climate action groups are implementing renewable energy projects, organizing climate resilience initiatives, and advocating for environmental justice...',
+      summary: 'Local climate activists create tangible environmental solutions through community organizing',
+      publishedAt: new Date('2025-08-05'),
+      engagement: 1156,
+      comments: 89
+    },
+    chat: {
+      id: 'chat-climate-1',
+      title: '🌍 Climate Action in Our Neighborhoods',
+      participants: 67,
+      messages: [
+        {
+          id: 'c1',
+          author: 'Dr. Sarah Kim',
+          content: 'We need to push for solar panels on all public buildings. I can help with the technical analysis.',
+          timestamp: new Date('2025-08-05T14:00:00'),
+          reactions: [{ emoji: '☀️', count: 34 }]
+        },
+        {
+          id: 'c2',
+          author: 'Marcus Green',
+          content: 'And flood-proofing for climate resilience! My neighborhood floods every heavy rain now.',
+          timestamp: new Date('2025-08-05T14:30:00'),
+          reactions: [{ emoji: '🌊', count: 28 }]
+        }
+      ],
+      createdAt: new Date('2025-08-05T13:00:00')
+    },
+    room: {
+      id: 'room-climate-1',
+      name: 'Climate Resilience Hub',
+      description: 'Building community climate resilience through renewable energy projects, adaptation planning, and environmental justice advocacy',
+      objectives: [
+        'Install 100 residential solar systems',
+        'Create neighborhood flood resilience plan',
+        'Organize climate justice campaigns',
+        'Build community emergency preparedness',
+        'Launch green jobs training program'
+      ],
+      members: 89,
+      impactScore: 1650,
+      quickActions: [
+        { id: 'qa1', label: 'Solar Planning', icon: '☀️', action: 'solar-planning' },
+        { id: 'qa2', label: 'Resilience Map', icon: '🗺️', action: 'resilience-mapping' },
+        { id: 'qa3', label: 'Policy Advocacy', icon: '📢', action: 'policy-advocacy' },
+        { id: 'qa4', label: 'Emergency Prep', icon: '🆘', action: 'emergency-prep' },
+        { id: 'qa5', label: 'Green Jobs', icon: '💼', action: 'green-jobs' }
+      ],
+      createdAt: new Date('2025-08-06')
+    },
+    club: {
+      id: 'club-climate-1',
+      name: 'Climate Justice Alliance',
+      description: 'A powerful coalition of environmental advocates, renewable energy cooperatives, and climate resilience organizers working for environmental justice and community-controlled climate solutions',
+      memberRooms: ['room-climate-1', 'room-climate-2', 'room-climate-3'],
+      totalMembers: 267,
+      impactScore: 4800
+    }
+  },
+  {
+    id: 'gt-12',
+    title: 'Digital Equity Initiative',
+    category: 'tech',
+    news: {
+      id: 'news-digital-1',
+      title: 'Community Tech Cooperatives Bridge the Digital Divide',
+      content: 'Neighborhood tech cooperatives are providing affordable internet, digital literacy training, and community-controlled technology infrastructure...',
+      summary: 'Community-owned tech cooperatives democratize access to digital resources and skills',
+      publishedAt: new Date('2025-08-04'),
+      engagement: 834,
+      comments: 62
+    },
+    chat: {
+      id: 'chat-digital-1',
+      title: '💻 Building Digital Equity Together',
+      participants: 45,
+      messages: [
+        {
+          id: 'd1',
+          author: 'Priya Sharma',
+          content: 'We could set up a community mesh network! I have the technical skills and some equipment to start.',
+          timestamp: new Date('2025-08-04T16:00:00'),
+          reactions: [{ emoji: '🌐', count: 22 }]
+        },
+        {
+          id: 'd2',
+          author: 'Carlos Rivera',
+          content: 'Perfect! My community center could host digital literacy classes. Many seniors need help with basic computer skills.',
+          timestamp: new Date('2025-08-04T16:30:00'),
+          reactions: [{ emoji: '👨‍🏫', count: 19 }]
+        }
+      ],
+      createdAt: new Date('2025-08-04T15:00:00')
+    },
+    room: {
+      id: 'room-digital-1',
+      name: 'Digital Commons Collective',
+      description: 'Creating community-controlled digital infrastructure through mesh networks, digital literacy programs, and technology cooperatives',
+      objectives: [
+        'Deploy community mesh network',
+        'Train 200 residents in digital skills',
+        'Establish tech repair cooperative',
+        'Create community data sovereignty plan',
+        'Launch digital rights advocacy'
+      ],
+      members: 61,
+      impactScore: 1150,
+      quickActions: [
+        { id: 'qa1', label: 'Network Setup', icon: '🌐', action: 'network-setup' },
+        { id: 'qa2', label: 'Digital Training', icon: '💻', action: 'digital-training' },
+        { id: 'qa3', label: 'Tech Repair', icon: '🔧', action: 'tech-repair' },
+        { id: 'qa4', label: 'Data Rights', icon: '🔒', action: 'data-rights' },
+        { id: 'qa5', label: 'Coop Planning', icon: '🤝', action: 'coop-planning' }
+      ],
+      createdAt: new Date('2025-08-05')
+    },
+    club: {
+      id: 'club-digital-1',
+      name: 'Community Tech Cooperative',
+      description: 'A democratic technology collective building community-controlled digital infrastructure, providing digital literacy education, and advocating for digital rights and equity',
+      memberRooms: ['room-digital-1', 'room-digital-2', 'room-digital-3'],
+      totalMembers: 183,
+      impactScore: 3400
     }
   }
 ];

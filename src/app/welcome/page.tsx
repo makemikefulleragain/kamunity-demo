@@ -13,7 +13,7 @@ import {
   CardContent
 } from '@/components/ui';
 import { trackPageView, trackButtonClick } from '@/lib/demo/analytics';
-import { EnhancedRoomGenerator } from '@/components/demo/EnhancedRoomGenerator';
+import Link from 'next/link';
 
 interface PerspectiveCard {
   id: string;
@@ -52,8 +52,8 @@ const perspectives: PerspectiveCard[] = [
     title: "I Want to Lead",
     description: "Create your own focus room and bring people together around shared interests.",
     emoji: "🚀",
-    destination: "room-generator",
-    destinationType: 'modal',
+    destination: "/rooms/generate",
+    destinationType: 'route',
     color: "from-green-400 to-green-600",
     capability: 'high'
   },
@@ -257,9 +257,28 @@ const WelcomePage = () => {
 
       {/* Room Generator Modal */}
       {showRoomGenerator && (
-        <EnhancedRoomGenerator
-          onClose={() => setShowRoomGenerator(false)}
-        />
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold mb-4">Create Your Focus Room</h3>
+            <p className="text-gray-600 mb-6">
+              Ready to lead? Create your own focus room and bring people together around shared interests.
+            </p>
+            <div className="flex gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowRoomGenerator(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Link href="/rooms/generate" className="flex-1">
+                <Button className="w-full">
+                  Create Room
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

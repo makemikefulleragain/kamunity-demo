@@ -172,8 +172,13 @@ const HubPageTemplate: React.FC<HubPageTemplateProps> = ({
 
           <Grid cols={1} responsive={{ md: 2, lg: 3 }} gap="lg">
             {cards.map((card) => {
-              // Determine the link based on the hub type
-              const cardLink = `/${hubName.toLowerCase()}/${card.id}`;
+              // Special handling for lore campaign room
+              let cardLink;
+              if (card.id === 'room-lore-campaign') {
+                cardLink = '/rooms/lore-campaign';
+              } else {
+                cardLink = `/${hubName.toLowerCase()}/${card.id}`;
+              }
               
               return (
               <Link key={card.id} href={cardLink} className="block">
@@ -217,7 +222,11 @@ const HubPageTemplate: React.FC<HubPageTemplateProps> = ({
                       ))}
                     </div>
                     <div className="text-xs text-gray-500">
-                      {new Date(card.createdAt).toLocaleDateString()}
+                      {new Date(card.createdAt).toLocaleDateString('en-AU', {
+                        day: '2-digit',
+                        month: '2-digit', 
+                        year: 'numeric'
+                      })}
                     </div>
                   </div>
                   </CardContent>

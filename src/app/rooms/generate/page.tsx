@@ -391,17 +391,28 @@ export default function RoomGeneratorPage() {
 
         {/* Generator Component */}
         {selectedQuickActions.length >= 3 && (
-          <>
+          <div className="bg-white rounded-xl shadow-sm">
             {selectedGenerator === 'fast' && (
-              <FastTrackGenerator onComplete={handleGeneratorComplete} onCancel={handleCancel} />
+              <FastTrackGenerator 
+                onComplete={handleGeneratorComplete} 
+                onCancel={handleCancel}
+                triggerSource="manual"
+              />
             )}
             {selectedGenerator === 'balanced' && (
-              <BalancedGenerator onComplete={handleGeneratorComplete} onCancel={handleCancel} />
+              <BalancedGenerator 
+                onComplete={handleGeneratorComplete} 
+                onCancel={handleCancel}
+                triggerSource="manual"
+              />
             )}
             {selectedGenerator === 'comprehensive' && (
-              <ComprehensiveGenerator onComplete={handleGeneratorComplete} onCancel={handleCancel} />
+              <ComprehensiveGenerator 
+                onComplete={handleGeneratorComplete} 
+                onCancel={handleCancel}
+              />
             )}
-          </>
+          </div>
         )}
       </div>
     </div>

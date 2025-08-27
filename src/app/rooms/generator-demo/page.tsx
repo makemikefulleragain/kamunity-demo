@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { ArrowLeft, Sparkles, Play, Plus, ArrowRight } from 'lucide-react';
-import GeneratorChoiceModal from '@/components/rooms/generators/GeneratorChoiceModal';
 import SpecBuilder from '@/components/rooms/generators/shared/SpecBuilder';
 import QuestionEngine from '@/components/rooms/generators/shared/QuestionEngine';
 import GeneratedRoom from '@/components/rooms/generators/GeneratedRoom';
@@ -73,14 +72,14 @@ export default function GeneratorDemoPage() {
             Each path creates both a demo room and professional spec sheet.
           </p>
 
-          <button
-            onClick={() => setShowGeneratorModal(true)}
+          <a
+            href="/rooms/generate"
             className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl"
           >
             <Plus className="w-6 h-6" />
             Create New Room
             <ArrowRight className="w-5 h-5" />
-          </button>
+          </a>
         </div>
 
         {/* Features Grid */}
@@ -205,13 +204,6 @@ export default function GeneratorDemoPage() {
         </div>
       </div>
 
-      {/* Modals */}
-      <GeneratorChoiceModal
-        isOpen={showGeneratorModal}
-        onClose={() => setShowGeneratorModal(false)}
-        onRoomCreated={handleRoomCreated}
-        triggerSource="manual"
-      />
 
       {/* Spec View */}
       {currentView === 'spec' && currentRoom && (

@@ -1,45 +1,15 @@
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Home } from 'lucide-react';
 import HubPageTemplate from '@/components/demo/HubPageTemplate';
 import ProgressionBadge from '@/components/demo/ProgressionBadge';
-import FocusRoomGenerator from '@/components/demo/FocusRoomGenerator';
 import { Text, Heading } from '@/components/ui';
 import { roomSeeds } from '@/data/roomSeeds';
 import { trackPageView, trackEngagement } from '@/lib/demo/analytics';
 
 export default function RoomsPage() {
-  const [showFocusRoomGenerator, setShowFocusRoomGenerator] = useState(false);
 
-  const handleFocusRoomSubmit = async (data: {
-    roomName: string;
-    primaryGoal: string;
-    targetAudience: string;
-    timeCommitment: string;
-    keyFeatures: string[];
-    successMetrics: string[];
-  }) => {
-    try {
-      const response = await fetch('/api/demo/focus-room', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (response.ok) {
-        console.log('Focus Room spec sheet generated successfully');
-      } else {
-        console.error('Failed to generate Focus Room spec sheet');
-      }
-    } catch (error) {
-      console.error('Error submitting Focus Room data:', error);
-    }
-    
-    setShowFocusRoomGenerator(false);
-  };
 
   return (
     <>
@@ -95,7 +65,7 @@ export default function RoomsPage() {
               Get a custom spec sheet with ROI analysis and implementation roadmap tailored to your community vision.
             </Text>
             <a
-              href="/create-room"
+              href="/rooms/generate"
               className="inline-flex items-center gap-2 px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium transition-colors shadow-lg hover:shadow-xl"
             >
               <span className="text-lg">✨</span>
@@ -106,11 +76,6 @@ export default function RoomsPage() {
       </div>
     </HubPageTemplate>
     
-    <FocusRoomGenerator
-      isOpen={showFocusRoomGenerator}
-      onClose={() => setShowFocusRoomGenerator(false)}
-      onSubmit={handleFocusRoomSubmit}
-    />
     </>
   );
 }

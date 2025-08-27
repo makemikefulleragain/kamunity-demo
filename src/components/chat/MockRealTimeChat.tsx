@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Button, Text } from '@/components/ui'
 import { Send, Users } from 'lucide-react'
-import UnifiedRoomGenerator from '@/components/rooms/UnifiedRoomGenerator'
 
 interface Message {
   id: string
@@ -332,36 +331,24 @@ export function MockRealTimeChat({ roomId }: MockRealTimeChatProps) {
       {/* Promote to Room Modal */}
       {isPromoteModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="p-4">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">Promote Chat to Focus Room</h2>
-                <button 
-                  onClick={() => setIsPromoteModalOpen(false)}
-                  className="text-gray-500 hover:text-gray-800"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-              <UnifiedRoomGenerator
-                entryPoint="chat-promotion"
-                chatContext={{
-                  id: roomId,
-                  messageCount: messages.length,
-                  participants: new Set(messages.map(m => m.user_id)).size,
-                  recentTopics: ['Urban farming techniques', 'Community workshops', 'Resource sharing'],
-                  keyMessages: messages.slice(-3).map(m => `${m.username}: ${m.content}`)
-                }}
-                onRoomRequest={(data: any) => {
-                  console.log('Promotion submitted:', data)
-                  setIsPromoteModalOpen(false)
-                  alert('🎉 Chat promoted to Focus Room successfully! In the real app, this would create a new Focus Room.')
-                }}
-                onClose={() => setIsPromoteModalOpen(false)}
-                isModal={true}
-              />
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold mb-4">Promote Chat to Focus Room</h3>
+            <p className="text-gray-600 mb-6">
+              Transform this active chat into a structured Focus Room for deeper collaboration.
+            </p>
+            <div className="flex gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => setIsPromoteModalOpen(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <a href="/rooms/generate" className="flex-1">
+                <Button className="w-full">
+                  Create Room
+                </Button>
+              </a>
             </div>
           </div>
         </div>

@@ -6,7 +6,6 @@ import { ChatMessage } from './ChatMessage'
 import { EnhancedChatHeader } from './EnhancedChatHeader'
 import { ChatFiltersAndTools } from './ChatFiltersAndTools'
 import { QuickPoll, CreatePollModal } from './QuickPoll'
-import UnifiedRoomGenerator from '@/components/rooms/UnifiedRoomGenerator'
 import { Button } from '@/components/ui/Button'
 import { Text } from '@/components/ui/Typography'
 import { Flex } from '@/components/ui/Layout'
@@ -541,10 +540,28 @@ export const RealTimeChat = ({
 
       {/* Promote Modal */}
       {showPromoteModal && (
-        <UnifiedRoomGenerator
-          onClose={() => setShowPromoteModal(false)}
-          chatContext={generateChatContext()}
-        />
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold mb-4">Promote Chat to Focus Room</h3>
+            <p className="text-gray-600 mb-6">
+              Transform this active chat into a structured Focus Room for deeper collaboration.
+            </p>
+            <div className="flex gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowPromoteModal(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Link href="/rooms/generate" className="flex-1">
+                <Button className="w-full">
+                  Create Room
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
       )}
       
       {/* Create Poll Modal */}

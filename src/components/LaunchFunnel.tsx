@@ -65,7 +65,7 @@ const LaunchFunnel: React.FC<LaunchFunnelProps> = ({ onCreateRoom, className = '
       description: 'Ready to take action? Create a Focus Room to organize collaborative efforts around the issues that matter to you.',
       icon: '🎯',
       actionText: 'Create Room',
-      actionOnClick: onCreateRoom,
+      actionHref: '/rooms/generate',
       isActive: currentStep === 2,
       isCompleted: currentStep > 2,
     },
@@ -216,13 +216,14 @@ const LaunchFunnel: React.FC<LaunchFunnelProps> = ({ onCreateRoom, className = '
                     Start Exploring
                   </Button>
                 </Link>
-                <Button 
-                  variant="primary" 
-                  size="lg"
-                  onClick={onCreateRoom}
-                >
-                  Create Your First Room
-                </Button>
+                <Link href="/rooms/generate">
+                  <Button 
+                    variant="primary" 
+                    size="lg"
+                  >
+                    Create Your First Room
+                  </Button>
+                </Link>
               </Flex>
             </CardContent>
           </Card>
