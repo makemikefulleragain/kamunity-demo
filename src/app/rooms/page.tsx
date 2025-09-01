@@ -76,8 +76,8 @@ export default function RoomsPage() {
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('focus', handleFocus);
     
-    // Set up interval to check for new rooms periodically
-    const interval = setInterval(loadSavedRooms, 3000);
+    // Set up interval to check for new rooms periodically (reduced frequency)
+    const interval = setInterval(loadSavedRooms, 30000); // Every 30 seconds instead of 3
     
     return () => {
       window.removeEventListener('storage', handleStorageChange);
