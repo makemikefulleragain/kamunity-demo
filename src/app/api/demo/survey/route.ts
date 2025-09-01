@@ -216,13 +216,10 @@ async function sendEmail({ to, subject, html }: { to: string; subject: string; h
             user_id: process.env.EMAILJS_USER_ID,
             template_params: {
               to_email: to,
-              to_name: to.split('@')[0],
               subject: subject,
-              message: html.replace(/<[^>]*>/g, ''), // Strip HTML for plain text
               html_content: html,
               from_name: 'Kamunity Demo',
-              from_email: 'demo@kamunity.org',
-              reply_to: 'mike@kamunityconsulting.com'
+              from_email: 'demo@kamunity.org'
             }
           })
         });
@@ -253,6 +250,12 @@ async function sendEmail({ to, subject, html }: { to: string; subject: string; h
         }
       } catch (emailJsError) {
         const errorMsg = emailJsError instanceof Error ? emailJsError.message : 'Unknown EmailJS error';
+        console.error('📧 EmailJS ERROR DETAILS:', {
+          error: errorMsg,
+          fullError: emailJsError,
+          to: to.substring(0, 10) + '***',
+          subject: subject.substring(0, 30)
+        });
         logEmailAttempt(to, subject, 'emailjs', false, errorMsg);
         console.warn('EmailJS failed, trying fallback:', emailJsError);
       }
@@ -262,6 +265,7 @@ async function sendEmail({ to, subject, html }: { to: string; subject: string; h
     console.log(`📧 EMAIL SIMULATION - To: ${to}`);
     console.log(`📧 EMAIL SIMULATION - Subject: ${subject}`);
     console.log(`📧 EMAIL SIMULATION - Content: ${html.substring(0, 200)}...`);
+    console.log('📧 FALLBACK REASON: EmailJS failed or not configured properly');
     
     emailSent.success = true;
     emailSent.method = 'console_simulation';

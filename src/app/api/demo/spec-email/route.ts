@@ -173,15 +173,10 @@ async function sendSpecEmail({ to, subject, html, roomName, isAdmin = false }: {
             user_id: process.env.EMAILJS_USER_ID,
             template_params: {
               to_email: to,
-              to_name: to.split('@')[0],
               subject: subject,
-              message: html.replace(/<[^>]*>/g, ''), // Strip HTML for plain text
               html_content: html,
               from_name: 'Kamunity Demo',
-              from_email: 'demo@kamunity.org',
-              reply_to: 'mike@kamunityconsulting.com',
-              room_name: roomName,
-              is_admin: isAdmin
+              from_email: 'demo@kamunity.org'
             }
           })
         });
