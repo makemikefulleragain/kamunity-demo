@@ -47,24 +47,29 @@ export async function POST(request: NextRequest) {
       hasUserId: !!process.env.EMAILJS_USER_ID
     });
 
+    // Initialize email status
+    let emailStatus = { success: false, method: 'none' };
+
     // Send admin notification email
     console.log('📧 Sending admin notification...');
-    await sendAdminNotification(surveyData, analyticsData, timestamp);
+    const adminEmailResult = await sendAdminNotification(surveyData, analyticsData, timestamp);
     console.log('✅ Admin notification sent');
 
     // Send user thank you email if email provided
     if (surveyData?.email) {
       console.log('📧 Sending user thank you email...');
-      await sendUserThankYou(surveyData, analyticsData, timestamp);
+      const userEmailResult = await sendUserThankYou(surveyData, analyticsData, timestamp);
       console.log('✅ User thank you email sent');
+      emailStatus = userEmailResult || emailStatus;
     } else {
       console.log('⚠️ No user email provided, skipping user email');
+      emailStatus = adminEmailResult || emailStatus;
     }
 
     return NextResponse.json({ 
       success: true, 
       message: 'Survey submitted successfully',
-      emailStatus: emailSent,
+      emailStatus,
       debug: {
         emailJSConfigured,
         timestamp: new Date().toISOString()
@@ -84,7 +89,7 @@ async function sendAdminNotification(
   surveyData: SurveyData, 
   analyticsData: AnalyticsData, 
   timestamp: string
-) {
+): Promise<{ success: boolean; method: string }> {
   const emailContent = `
     <h2>New Kamunity Demo Feedback</h2>
     <p><strong>Submitted:</strong> ${new Date(timestamp).toLocaleString()}</p>
@@ -110,7 +115,7 @@ async function sendAdminNotification(
     </ul>
   `;
 
-  await sendEmail({
+  return await sendEmail({
     to: 'mike@kamunityconsulting.com',
     subject: 'New Kamunity Demo Feedback',
     html: emailContent
@@ -121,7 +126,7 @@ async function sendUserThankYou(
   surveyData: SurveyData, 
   analyticsData: AnalyticsData, 
   timestamp: string
-) {
+): Promise<{ success: boolean; method: string }> {
   const emailContent = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <div style="text-align: center; margin-bottom: 30px;">
@@ -169,7 +174,7 @@ async function sendUserThankYou(
     </div>
   `;
 
-  await sendEmail({
+  return await sendEmail({
     to: surveyData.email!,
     subject: 'Thank you for your Kamunity feedback! 🎉',
     html: emailContent
