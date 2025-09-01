@@ -110,6 +110,7 @@ For questions about this specification or implementation support:
       setExportStatus('success');
       setTimeout(() => setExportStatus('idle'), 3000);
     } catch (error) {
+      console.error('📧 SpecExporter download error:', error);
       setExportStatus('error');
       setTimeout(() => setExportStatus('idle'), 3000);
     } finally {
@@ -132,26 +133,36 @@ For questions about this specification or implementation support:
     try {
       const content = generatePDFContent();
       
-      // Simulate email sending (in real implementation, this would call an API)
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      console.log('📧 Calling /api/demo/spec-email endpoint');
       
-      // Store email request for admin notification
-      const emailData = {
-        userEmail: email,
-        roomTitle: roomData.name,
-        specification: content,
-        timestamp: new Date().toISOString(),
-        adminEmail: 'mike@kamunityconsulting.com'
-      };
+      const response = await fetch('/api/demo/spec-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email.trim(),
+          roomName: roomData.name,
+          specification: content,
+          roomData: roomData
+        })
+      });
+
+      console.log('📡 Spec email API response status:', response.status);
       
-      // In real implementation, this would send emails to both user and admin
-      console.log('Email data prepared:', emailData);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('📡 Spec email API error:', errorText);
+        throw new Error(`Failed to send specification email: ${response.status}`);
+      }
+      
+      const responseData = await response.json();
+      console.log('📡 Spec email API response:', responseData);
       
       setExportStatus('success');
       setShowEmailForm(false);
       setEmail('');
       setTimeout(() => setExportStatus('idle'), 3000);
     } catch (error) {
+      console.error('📧 SpecExporter email error:', error);
       setExportStatus('error');
       setTimeout(() => setExportStatus('idle'), 3000);
     } finally {
