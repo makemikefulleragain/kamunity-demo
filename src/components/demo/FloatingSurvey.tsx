@@ -190,13 +190,8 @@ const FloatingSurvey: React.FC<FloatingSurveyProps> = ({
       console.log('📊 Analytics data collected:', analyticsData);
       
       // Submit survey data
-      console.log('🚀 Submitting survey to API:', { 
-        surveyData: {
-          ...surveyData,
-          email: surveyData.email ? surveyData.email.substring(0, 3) + '***' : 'none'
-        }, 
-        analyticsData 
-      });
+      console.log('🚀 Submitting survey to API:', { surveyData, analyticsData });
+      console.log('🌐 Making API call to:', window.location.origin + '/api/demo/survey');
       
       const response = await fetch('/api/demo/survey', {
         method: 'POST',
@@ -218,6 +213,8 @@ const FloatingSurvey: React.FC<FloatingSurveyProps> = ({
       
       const responseData = await response.json();
       console.log('📡 API Response data:', responseData);
+      console.log('📧 Email Status:', responseData.emailStatus);
+      console.log('🔧 Debug Info:', responseData.debug);
 
       // Track survey completion
       demoAnalytics.trackEvent('engagement_action', { 

@@ -63,7 +63,12 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ 
       success: true, 
-      message: 'Survey submitted successfully' 
+      message: 'Survey submitted successfully',
+      emailStatus: emailSent,
+      debug: {
+        emailJSConfigured,
+        timestamp: new Date().toISOString()
+      }
     });
 
   } catch (error) {
