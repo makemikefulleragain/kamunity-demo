@@ -119,7 +119,12 @@ For questions about this specification or implementation support:
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim()) return;
+    console.log('🔘 SpecExporter email submit clicked!', { email: email.trim() });
+    
+    if (!email.trim()) {
+      console.log('⚠️ No email provided, returning early');
+      return;
+    }
     
     setIsGenerating(true);
     onExport('email');

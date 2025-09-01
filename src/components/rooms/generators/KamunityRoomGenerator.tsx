@@ -534,7 +534,10 @@ export default function KamunityRoomGenerator({ onComplete, onCancel }: Kamunity
             
             <div className="flex gap-4 justify-center">
               <button
-                onClick={() => setCurrentStep('email')}
+                onClick={() => {
+                  console.log('🔘 Email Specification button clicked!');
+                  setCurrentStep('email');
+                }}
                 className="px-6 py-3 border border-green-600 text-green-600 rounded-lg hover:bg-green-50 transition-all flex items-center gap-2"
               >
                 <Mail className="w-4 h-4" />

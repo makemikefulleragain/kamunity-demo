@@ -613,7 +613,13 @@ export default function GeneratedRoom({ roomData, onBack, onEnhance }: Generated
                     <p className="text-sm text-blue-700 mb-3">
                       Professional consultation document via email
                     </p>
-                    <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+                    <button 
+                      onClick={() => {
+                        console.log('🔘 GeneratedRoom Email Specification button clicked!');
+                        handleSaveDemo();
+                      }}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                    >
                       Email Specification
                     </button>
                   </div>

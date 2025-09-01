@@ -514,7 +514,10 @@ const FloatingSurvey: React.FC<FloatingSurveyProps> = ({
                   </Button>
                 ) : (
                   <Button
-                    onClick={handleSubmit}
+                    onClick={() => {
+                      console.log('🔘 Submit button clicked!');
+                      handleSubmit();
+                    }}
                     disabled={isSubmitting}
                     size="sm"
                     className="bg-primary-500 hover:bg-primary-600 flex items-center gap-1"
