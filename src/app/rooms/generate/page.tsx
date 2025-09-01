@@ -2,144 +2,85 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Check, Zap, Sparkles, Crown } from 'lucide-react';
+import { ArrowLeft, MessageCircle, Wrench, Search, Users, Calendar } from 'lucide-react';
 import Link from 'next/link';
 import { memoryStore } from '@/lib/demo/memoryStore';
-import { calculateCompleteness } from '@/components/rooms/generators/shared/utils';
 import { UnifiedRoomData } from '@/components/rooms/generators/shared/types';
-import FastTrackGenerator from '@/components/rooms/generators/FastTrackGenerator';
-import BalancedGenerator from '@/components/rooms/generators/BalancedGenerator';
-import ComprehensiveGenerator from '@/components/rooms/generators/ComprehensiveGenerator';
+import KamunityRoomGenerator from '@/components/rooms/generators/KamunityRoomGenerator';
+import PreBuiltRoomSelector from '@/components/rooms/generators/PreBuiltRoomSelector';
 
-type GeneratorType = 'fast' | 'balanced' | 'comprehensive' | null;
+type WorkflowType = 'kamunity' | 'prebuilt' | null;
+type PreBuiltRoomType = 'project' | 'exploration' | 'advocate' | 'get-together';
 
 export default function RoomGeneratorPage() {
   const router = useRouter();
-  const [selectedGenerator, setSelectedGenerator] = useState<GeneratorType>(null);
-  const [roomData, setRoomData] = useState<Partial<UnifiedRoomData> | null>(null);
-  const [showSpec, setShowSpec] = useState(false);
-  const [selectedQuickActions, setSelectedQuickActions] = useState<string[]>([]);
-  const [completeness, setCompleteness] = useState(0);
+  const [selectedWorkflow, setSelectedWorkflow] = useState<WorkflowType>(null);
+  const [selectedPreBuiltType, setSelectedPreBuiltType] = useState<PreBuiltRoomType | null>(null);
+  // Removed roomData state - data now passed directly to demo room
+  // Removed showDemo state - now navigates directly to demo room
 
-  const quickActionOptions = [
-    'Schedule Event',
-    'View Analytics', 
-    'Invite Members',
-    'Share Resources',
-    'Start Discussion',
-    'Create Project',
-    'Set Milestones',
-    'Track Progress'
-  ];
-
-  const handleGeneratorComplete = (data: Partial<UnifiedRoomData>) => {
-    // Calculate completeness
-    const comp = calculateCompleteness(data);
-    setCompleteness(comp);
-    
-    // Store room data with selected quick actions
-    const enrichedData = {
-      ...data,
-      completeness: comp,
-      quickActions: selectedQuickActions.length > 0 ? selectedQuickActions : quickActionOptions.slice(0, 5),
-      requirements: [
-        { id: 1, title: 'Define room objectives', status: 'active', priority: 'high' },
-        { id: 2, title: 'Set up communication channels', status: 'pending', priority: 'medium' },
-        { id: 3, title: 'Create onboarding process', status: 'pending', priority: 'high' }
-      ],
-      impactMetrics: [
-        { label: 'Members', value: '0', trend: 'up' },
-        { label: 'Projects', value: '0', trend: 'up' },
-        { label: 'Impact Score', value: '0', trend: 'up' }
-      ]
-    };
-    
-    setRoomData(enrichedData);
-    setShowSpec(true);
+  const preBuiltRoomTemplates = {
+    project: {
+      name: 'Project Room',
+      description: 'Organize and execute community projects with clear goals and timelines',
+      icon: Wrench,
+      features: ['Task Management', 'Timeline Tracking', 'Resource Sharing', 'Progress Reports'],
+      color: 'blue'
+    },
+    exploration: {
+      name: 'Exploration Room', 
+      description: 'Discover new ideas and opportunities through collaborative research',
+      icon: Search,
+      features: ['Research Tools', 'Idea Board', 'Discussion Forums', 'Knowledge Base'],
+      color: 'green'
+    },
+    advocate: {
+      name: 'Advocate Room',
+      description: 'Rally support and drive change for important community causes',
+      icon: Users,
+      features: ['Campaign Tools', 'Petition System', 'Event Planning', 'Impact Tracking'],
+      color: 'red'
+    },
+    'get-together': {
+      name: 'Get Together Room',
+      description: 'Build connections through social events and community gatherings',
+      icon: Calendar,
+      features: ['Event Calendar', 'RSVP System', 'Social Feed', 'Photo Sharing'],
+      color: 'purple'
+    }
   };
 
-  const handleCancel = () => {
-    setSelectedGenerator(null);
-    setSelectedQuickActions([]);
-  };
-
-  const handleGoToFocusRoom = () => {
-    if (!roomData) return;
-    
+  const handleWorkflowComplete = (data: Partial<UnifiedRoomData>) => {
     // Generate unique room ID
     const roomId = `room_${Date.now()}`;
     
     // Store room data in memory
-    memoryStore.set(`room_${roomId}`, roomData);
+    memoryStore.set(`room_${roomId}`, data);
     
     // Track room creation
     memoryStore.track('room_created', {
       roomId,
-      generator: selectedGenerator,
-      completeness,
-      quickActions: selectedQuickActions
+      workflow: selectedWorkflow,
+      preBuiltType: selectedPreBuiltType,
+      timestamp: new Date().toISOString()
     });
     
-    // Navigate to focus room
-    router.push(`/rooms/${roomId}/focus`);
+    // Navigate directly to demo room
+    router.push(`/rooms/${roomId}/demo`);
   };
 
-  const handleEnhanceRoom = () => {
-    if (!roomData) return;
-    
-    const roomId = `room_${Date.now()}`;
-    memoryStore.set(`room_${roomId}`, roomData);
-    router.push(`/rooms/${roomId}/enhance`);
+  const handleCancel = () => {
+    setSelectedWorkflow(null);
+    setSelectedPreBuiltType(null);
   };
 
-  // Quick Actions Selection Component
-  const QuickActionsSelector = () => (
-    <div className="mb-6">
-      <h3 className="text-lg font-semibold mb-3">Select Quick Actions (3-5)</h3>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {quickActionOptions.map(action => {
-          const isSelected = selectedQuickActions.includes(action);
-          const canSelect = selectedQuickActions.length < 5;
-          
-          return (
-            <button
-              key={action}
-              onClick={() => {
-                if (isSelected) {
-                  setSelectedQuickActions(prev => prev.filter(a => a !== action));
-                } else if (canSelect) {
-                  setSelectedQuickActions(prev => [...prev, action]);
-                }
-              }}
-              disabled={!isSelected && !canSelect}
-              className={`p-3 rounded-lg border-2 transition-all ${
-                isSelected 
-                  ? 'border-blue-500 bg-blue-50 text-blue-700' 
-                  : canSelect
-                    ? 'border-gray-200 hover:border-gray-300 bg-white'
-                    : 'border-gray-100 bg-gray-50 text-gray-400 cursor-not-allowed'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">{action}</span>
-                {isSelected && <Check className="w-4 h-4 ml-2" />}
-              </div>
-            </button>
-          );
-        })}
-      </div>
-      <p className="text-sm text-gray-600 mt-3">
-        Selected: {selectedQuickActions.length}/5 
-        {selectedQuickActions.length < 3 && ' (minimum 3 required)'}
-      </p>
-    </div>
-  );
+  // Removed handleGoToDemo - functionality moved to handleWorkflowComplete
 
-  // Generator Selection Screen
-  if (!selectedGenerator) {
+  // Main 50/50 Split Layout
+  if (!selectedWorkflow) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-        <div className="max-w-5xl mx-auto px-4 py-8">
+        <div className="max-w-7xl mx-auto px-4 py-8">
           <Link href="/rooms" className="text-blue-600 hover:text-blue-700 flex items-center gap-2 mb-8">
             <ArrowLeft className="w-4 h-4" />
             Back to Rooms
@@ -147,273 +88,186 @@ export default function RoomGeneratorPage() {
 
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold text-gray-900 mb-4">Create Your Focus Room</h1>
-            <p className="text-xl text-gray-600">Choose a generator that matches your needs</p>
+            <p className="text-xl text-gray-600">Choose your preferred approach to room creation</p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
-            {/* Fast Track */}
-            <button
-              onClick={() => setSelectedGenerator('fast')}
-              className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all p-6 text-left border-2 border-transparent hover:border-green-200 group"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Zap className="w-6 h-6 text-white" />
+          <div className="grid lg:grid-cols-2 gap-8">
+            {/* Left Column - Kamunity Room Generator */}
+            <div className="bg-white rounded-xl shadow-lg p-8">
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <MessageCircle className="w-8 h-8 text-white" />
                 </div>
-                <span className="text-sm text-green-600 font-medium">60-70% Complete</span>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Kamunity Room Generator</h2>
+                <p className="text-gray-600">Professional consultation approach with comprehensive specification</p>
               </div>
-              <h3 className="text-xl font-semibold mb-2">Fast Track</h3>
-              <p className="text-gray-600 mb-4">Get started quickly with essential details</p>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-green-500" />
-                  Basic room setup
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-green-500" />
-                  Core features enabled
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-green-500" />
-                  Ready in 2 minutes
-                </li>
-              </ul>
-            </button>
+              
+              <div className="space-y-4 mb-8">
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-xs font-semibold text-purple-600">1</span>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">Introduction & Safeguards</h4>
+                    <p className="text-sm text-gray-600">Clear purpose explanation with transparency checks</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-xs font-semibold text-purple-600">2</span>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">Clarifying Questions</h4>
+                    <p className="text-sm text-gray-600">Deep dive into audience, goals, and constraints</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-xs font-semibold text-purple-600">3</span>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">Confirmation & Alignment</h4>
+                    <p className="text-sm text-gray-600">Explicit confirmation before proceeding</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-xs font-semibold text-purple-600">4</span>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">Comprehensive Specification</h4>
+                    <p className="text-sm text-gray-600">Full 8-section professional room spec with wireframes</p>
+                  </div>
+                </div>
+              </div>
+              
+              <button
+                onClick={() => setSelectedWorkflow('kamunity')}
+                className="w-full px-6 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all font-semibold text-lg"
+              >
+                Let's Design a Kamunity Room
+              </button>
+            </div>
 
-            {/* Balanced */}
-            <button
-              onClick={() => setSelectedGenerator('balanced')}
-              className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all p-6 text-left border-2 border-transparent hover:border-blue-200 group"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Sparkles className="w-6 h-6 text-white" />
-                </div>
-                <span className="text-sm text-blue-600 font-medium">75-85% Complete</span>
+            {/* Right Column - Pre-built Room Templates */}
+            <div className="bg-white rounded-xl shadow-lg p-8">
+              <div className="text-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Pre-built Room Templates</h2>
+                <p className="text-gray-600">Quick start with proven room configurations</p>
+                <p className="text-sm text-blue-600 font-medium mt-2">NB: Once open, you can tweak the settings</p>
               </div>
-              <h3 className="text-xl font-semibold mb-2">Balanced</h3>
-              <p className="text-gray-600 mb-4">Comprehensive setup with good detail</p>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-blue-500" />
-                  Detailed objectives
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-blue-500" />
-                  Member roles defined
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-blue-500" />
-                  Most features unlocked
-                </li>
-              </ul>
-            </button>
-
-            {/* Comprehensive */}
-            <button
-              onClick={() => setSelectedGenerator('comprehensive')}
-              className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all p-6 text-left border-2 border-transparent hover:border-purple-200 group"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Crown className="w-6 h-6 text-white" />
-                </div>
-                <span className="text-sm text-purple-600 font-medium">90-100% Complete</span>
+              
+              <div className="space-y-4">
+                {Object.entries(preBuiltRoomTemplates).map(([key, template]) => {
+                  const IconComponent = template.icon;
+                  const colorClasses = {
+                    blue: 'from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700',
+                    green: 'from-green-500 to-green-600 hover:from-green-600 hover:to-green-700',
+                    red: 'from-red-500 to-red-600 hover:from-red-600 hover:to-red-700',
+                    purple: 'from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700'
+                  };
+                  
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => {
+                        setSelectedPreBuiltType(key as PreBuiltRoomType);
+                        setSelectedWorkflow('prebuilt');
+                      }}
+                      className="w-full p-4 border-2 border-gray-200 rounded-lg hover:border-gray-300 transition-all text-left group"
+                    >
+                      <div className="flex items-start gap-4">
+                        <div className={`w-12 h-12 bg-gradient-to-br ${colorClasses[template.color]} rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                          <IconComponent className="w-6 h-6 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-gray-900 mb-1">{template.name}</h3>
+                          <p className="text-sm text-gray-600 mb-2">{template.description}</p>
+                          <div className="flex flex-wrap gap-1">
+                            {template.features.slice(0, 2).map((feature, index) => (
+                              <span key={index} className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                                {feature}
+                              </span>
+                            ))}
+                            {template.features.length > 2 && (
+                              <span className="text-xs text-gray-500">+{template.features.length - 2} more</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
-              <h3 className="text-xl font-semibold mb-2">Comprehensive</h3>
-              <p className="text-gray-600 mb-4">Full professional setup with all details</p>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-purple-500" />
-                  Complete specification
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-purple-500" />
-                  All features unlocked
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-purple-500" />
-                  Priority support
-                </li>
-              </ul>
-            </button>
+            </div>
           </div>
         </div>
       </div>
     );
   }
 
-  // Show Spec Preview
-  if (showSpec && roomData) {
+  // Removed intermediate "Demo Room is Ready" step - now goes directly to demo room
+
+  // Show Workflow Components
+  if (selectedWorkflow === 'kamunity') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
         <div className="max-w-4xl mx-auto px-4 py-8">
           <div className="mb-8">
             <button
-              onClick={() => {
-                setShowSpec(false);
-                setSelectedGenerator(null);
-                setSelectedQuickActions([]);
-              }}
+              onClick={handleCancel}
               className="text-blue-600 hover:text-blue-700 flex items-center gap-2"
             >
               <ArrowLeft className="w-4 h-4" />
-              Start Over
+              Back to Selection
             </button>
           </div>
-
-          <div className="bg-white rounded-xl shadow-lg p-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold">Room Specification</h2>
-              <div className="flex items-center gap-4">
-                <div className="text-right">
-                  <p className="text-sm text-gray-600">Completeness</p>
-                  <p className="text-2xl font-bold text-blue-600">{completeness}%</p>
-                </div>
-                <div className="w-24 h-24">
-                  <svg className="transform -rotate-90 w-24 h-24">
-                    <circle cx="48" cy="48" r="36" stroke="#e5e7eb" strokeWidth="8" fill="none" />
-                    <circle
-                      cx="48" cy="48" r="36"
-                      stroke="url(#gradient)"
-                      strokeWidth="8"
-                      fill="none"
-                      strokeDasharray={`${(completeness / 100) * 226.2} 226.2`}
-                      strokeLinecap="round"
-                    />
-                    <defs>
-                      <linearGradient id="gradient">
-                        <stop offset="0%" stopColor="#3b82f6" />
-                        <stop offset="100%" stopColor="#8b5cf6" />
-                      </linearGradient>
-                    </defs>
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4 mb-6">
-              <div>
-                <h3 className="font-semibold text-gray-700">Title</h3>
-                <p className="text-gray-900">{roomData.title || 'Untitled Room'}</p>
-              </div>
-              
-              {roomData.purpose && (
-                <div>
-                  <h3 className="font-semibold text-gray-700">Purpose</h3>
-                  <p className="text-gray-900">{roomData.purpose}</p>
-                </div>
-              )}
-
-              {roomData.description && (
-                <div>
-                  <h3 className="font-semibold text-gray-700">Description</h3>
-                  <p className="text-gray-900">{roomData.description}</p>
-                </div>
-              )}
-
-              {roomData.targetAudience && (
-                <div>
-                  <h3 className="font-semibold text-gray-700">Target Audience</h3>
-                  <p className="text-gray-900">{roomData.targetAudience}</p>
-                </div>
-              )}
-
-              {roomData.expectedOutcomes && roomData.expectedOutcomes.length > 0 && (
-                <div>
-                  <h3 className="font-semibold text-gray-700">Expected Outcomes</h3>
-                  <ul className="list-disc list-inside text-gray-900">
-                    {roomData.expectedOutcomes.map((outcome, index) => (
-                      <li key={index}>{outcome}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-
-            {completeness < 100 && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                <h4 className="font-semibold text-blue-900 mb-2">Complete Your Room to 100%</h4>
-                <p className="text-blue-700 text-sm mb-3">
-                  Unlock advanced features by adding more details:
-                </p>
-                <ul className="text-sm text-blue-600 space-y-1">
-                  <li>• AI-powered insights and recommendations</li>
-                  <li>• Automated workflow suggestions</li>
-                  <li>• Advanced analytics and reporting</li>
-                  <li>• Priority support and guidance</li>
-                </ul>
-              </div>
-            )}
-
-            <div className="flex gap-4">
-              <button
-                onClick={handleGoToFocusRoom}
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all"
-              >
-                Go to Focus Room
-              </button>
-              {completeness < 100 && (
-                <button
-                  onClick={handleEnhanceRoom}
-                  className="px-6 py-3 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-all"
-                >
-                  Enhance Room
-                </button>
-              )}
-            </div>
+          
+          <KamunityRoomGenerator 
+            onComplete={handleWorkflowComplete}
+            onCancel={handleCancel}
+          />
+        </div>
+      </div>
+    );
+  }
+  
+  if (selectedWorkflow === 'prebuilt' && selectedPreBuiltType) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          <div className="mb-8">
+            <button
+              onClick={handleCancel}
+              className="text-blue-600 hover:text-blue-700 flex items-center gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Selection
+            </button>
           </div>
+          
+          <PreBuiltRoomSelector 
+            roomType={selectedPreBuiltType}
+            template={preBuiltRoomTemplates[selectedPreBuiltType]}
+            onComplete={handleWorkflowComplete}
+            onCancel={handleCancel}
+          />
         </div>
       </div>
     );
   }
 
-  // Show Generator with Quick Actions
+  // Fallback - should not reach here
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="mb-8">
-          <button
-            onClick={handleCancel}
-            className="text-blue-600 hover:text-blue-700 flex items-center gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Selection
-          </button>
-        </div>
-
-        {/* Quick Actions Selection */}
-        {selectedQuickActions.length < 3 && (
-          <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-            <QuickActionsSelector />
-          </div>
-        )}
-
-        {/* Generator Component */}
-        {selectedQuickActions.length >= 3 && (
-          <div className="bg-white rounded-xl shadow-sm">
-            {selectedGenerator === 'fast' && (
-              <FastTrackGenerator 
-                onComplete={handleGeneratorComplete} 
-                onCancel={handleCancel}
-                triggerSource="manual"
-              />
-            )}
-            {selectedGenerator === 'balanced' && (
-              <BalancedGenerator 
-                onComplete={handleGeneratorComplete} 
-                onCancel={handleCancel}
-                triggerSource="manual"
-              />
-            )}
-            {selectedGenerator === 'comprehensive' && (
-              <ComprehensiveGenerator 
-                onComplete={handleGeneratorComplete} 
-                onCancel={handleCancel}
-              />
-            )}
-          </div>
-        )}
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+      <div className="text-center">
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">Something went wrong</h2>
+        <button
+          onClick={handleCancel}
+          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all"
+        >
+          Start Over
+        </button>
       </div>
     </div>
   );

@@ -40,7 +40,7 @@ const perspectives: PerspectiveCard[] = [
   {
     id: 'ready-connect',
     title: "I'm Ready to Connect",
-    description: "I&apos;m ready to connect with others and participate in meaningful conversations and meet community members. Start building relationships.",
+    description: "I'm ready to connect and take part in great conversations from all our communities.",
     emoji: "💬",
     destination: "/chat",
     destinationType: 'route',
@@ -49,8 +49,8 @@ const perspectives: PerspectiveCard[] = [
   },
   {
     id: 'want-lead',
-    title: "I Want to Lead",
-    description: "Create your own focus room and bring people together around shared interests.",
+    title: "I Want a Room",
+    description: "Create your own kamunity room and bring people together around shared interests.",
     emoji: "🚀",
     destination: "/rooms/generate",
     destinationType: 'route',
@@ -74,7 +74,7 @@ const neutralOption: PerspectiveCard = {
   title: "Just Browsing",
   description: "No pressure, no expectations. Explore Kamunity at your own pace and see what resonates with you.",
   emoji: "👀",
-  destination: "/demo",
+  destination: "/",
   destinationType: 'route',
   color: "from-gray-300 to-gray-500",
   capability: 'neutral'

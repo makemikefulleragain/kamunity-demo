@@ -22,17 +22,23 @@ interface SurveyData {
 interface FloatingSurveyProps {
   onClose?: () => void;
   triggerDelay?: number; // milliseconds before showing survey
+  recurringInterval?: number; // milliseconds between recurring surveys
 }
+
+type SurveyState = 'never_shown' | 'waiting_for_trigger' | 'visible' | 'completed' | 'dismissed' | 'waiting_for_next';
 
 const FloatingSurvey: React.FC<FloatingSurveyProps> = ({ 
   onClose, 
-  triggerDelay = 30000 // 30 seconds default
+  triggerDelay = 45000, // 45 seconds default
+  recurringInterval = 45000 // 45 seconds recurring
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const [surveyState, setSurveyState] = useState<SurveyState>('never_shown');
+  const [nextTriggerTime, setNextTriggerTime] = useState<number | null>(null);
   const [surveyData, setSurveyData] = useState<SurveyData>({
     email: '',
     experience: '',
@@ -43,21 +49,121 @@ const FloatingSurvey: React.FC<FloatingSurveyProps> = ({
     roomIdeas: ''
   });
 
-  // Show survey after delay, but only once per session
+  // Enhanced timer management for recurring surveys
   useEffect(() => {
-    const hasShown = sessionStorage.getItem('kamunity_survey_shown');
-    if (hasShown) return;
+    const loadSurveyState = () => {
+      try {
+        const stored = localStorage.getItem('kamunity_survey_state');
+        if (stored) {
+          const { state, nextTrigger } = JSON.parse(stored);
+          setSurveyState(state);
+          setNextTriggerTime(nextTrigger);
+          return { state, nextTrigger };
+        }
+      } catch (error) {
+        console.warn('Failed to load survey state:', error);
+      }
+      return { state: 'never_shown', nextTrigger: null };
+    };
 
-    const timer = setTimeout(() => {
-      setIsVisible(true);
-      sessionStorage.setItem('kamunity_survey_shown', 'true');
-    }, triggerDelay);
+    const saveSurveyState = (state: SurveyState, nextTrigger: number | null = null) => {
+      try {
+        localStorage.setItem('kamunity_survey_state', JSON.stringify({
+          state,
+          nextTrigger
+        }));
+        setSurveyState(state);
+        setNextTriggerTime(nextTrigger);
+      } catch (error) {
+        console.warn('Failed to save survey state:', error);
+      }
+    };
 
-    return () => clearTimeout(timer);
-  }, [triggerDelay]);
+    const checkAndTriggerSurvey = () => {
+      const { state, nextTrigger } = loadSurveyState();
+      const now = Date.now();
+
+      // Only log when state changes or actions are taken
+      const shouldLog = state === 'never_shown' || (state === 'waiting_for_next' && nextTrigger && now >= nextTrigger);
+
+      if (state === 'never_shown' && !isVisible) {
+        if (shouldLog) console.log(`⏰ Setting first timer for ${triggerDelay}ms`);
+        setTimeout(() => {
+          console.log('🎯 First survey trigger!');
+          setIsVisible(true);
+          saveSurveyState('visible');
+        }, triggerDelay);
+      } else if (state === 'waiting_for_next' && nextTrigger && now >= nextTrigger && !isVisible) {
+        console.log('🎯 Recurring survey trigger (time reached)!');
+        setIsVisible(true);
+        saveSurveyState('visible');
+      } else if (state === 'waiting_for_next' && nextTrigger && now < nextTrigger && !isVisible) {
+        const remainingTime = nextTrigger - now;
+        if (shouldLog) console.log(`⏰ Setting recurring timer for ${remainingTime}ms`);
+        setTimeout(() => {
+          console.log('🎯 Recurring survey trigger!');
+          setIsVisible(true);
+          saveSurveyState('visible');
+        }, remainingTime);
+      }
+      
+      // Prevent excessive polling when in stable visible state
+      if (state === 'visible' && isVisible) {
+        return; // Don't continue polling when survey is already visible
+      }
+    };
+
+    // Initial check
+    checkAndTriggerSurvey();
+
+    // Poll every 5 seconds to check for state changes
+    const pollInterval = setInterval(checkAndTriggerSurvey, 5000);
+
+    return () => {
+      clearInterval(pollInterval);
+    };
+  }, [triggerDelay, recurringInterval, isVisible]);
 
   const handleInputChange = (field: keyof SurveyData, value: string) => {
     setSurveyData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleDismiss = () => {
+    // Track dismissal
+    demoAnalytics.trackEvent('engagement_action', { 
+      action: 'survey_dismissed',
+      engagementLevel: 'low'
+    });
+
+    // Schedule next survey appearance
+    const nextTrigger = Date.now() + recurringInterval;
+    try {
+      localStorage.setItem('kamunity_survey_state', JSON.stringify({
+        state: 'waiting_for_next',
+        nextTrigger
+      }));
+      setSurveyState('waiting_for_next');
+      setNextTriggerTime(nextTrigger);
+    } catch (error) {
+      console.warn('Failed to save survey state after dismissal:', error);
+    }
+
+    // Close survey
+    setIsExpanded(false);
+    setIsVisible(false);
+    setCurrentStep(1);
+    setHasSubmitted(false);
+    
+    // Reset survey data
+    setSurveyData({
+      email: '',
+      experience: '',
+      mostInteresting: '',
+      suggestions: '',
+      wouldUseAgain: '',
+      additionalFeatures: '',
+      roomIdeas: ''
+    });
   };
 
   const handleSubmit = async () => {
@@ -71,6 +177,8 @@ const FloatingSurvey: React.FC<FloatingSurveyProps> = ({
       const analyticsData = demoAnalytics.getBehaviorSummary();
       
       // Submit survey data
+      console.log('🚀 Submitting survey to API:', { surveyData, analyticsData });
+      
       const response = await fetch('/api/demo/survey', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -81,9 +189,16 @@ const FloatingSurvey: React.FC<FloatingSurveyProps> = ({
         })
       });
 
+      console.log('📡 API Response status:', response.status);
+      
       if (!response.ok) {
-        throw new Error('Failed to submit survey');
+        const errorText = await response.text();
+        console.error('📡 API Error:', errorText);
+        throw new Error(`Failed to submit survey: ${response.status}`);
       }
+      
+      const responseData = await response.json();
+      console.log('📡 API Response data:', responseData);
 
       // Track survey completion
       demoAnalytics.trackEvent('engagement_action', { 
@@ -96,9 +211,35 @@ const FloatingSurvey: React.FC<FloatingSurveyProps> = ({
       
       setHasSubmitted(true);
       
+      // Schedule next survey appearance
+      const nextTrigger = Date.now() + recurringInterval;
+      try {
+        localStorage.setItem('kamunity_survey_state', JSON.stringify({
+          state: 'waiting_for_next',
+          nextTrigger
+        }));
+        setSurveyState('waiting_for_next');
+        setNextTriggerTime(nextTrigger);
+      } catch (error) {
+        console.warn('Failed to save survey state after completion:', error);
+      }
+      
       // Auto-close after showing thank you
       setTimeout(() => {
         setIsVisible(false);
+        setIsExpanded(false);
+        setHasSubmitted(false);
+        setCurrentStep(1);
+        // Reset survey data for next time
+        setSurveyData({
+          email: '',
+          experience: '',
+          mostInteresting: '',
+          suggestions: '',
+          wouldUseAgain: '',
+          additionalFeatures: '',
+          roomIdeas: ''
+        });
         onClose?.();
       }, 3000);
 
@@ -168,7 +309,7 @@ const FloatingSurvey: React.FC<FloatingSurveyProps> = ({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setIsExpanded(false)}
+                onClick={() => handleDismiss()}
                 className="text-gray-400 hover:text-gray-600"
               >
                 <X className="w-4 h-4" />

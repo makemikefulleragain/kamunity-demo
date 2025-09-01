@@ -104,7 +104,7 @@ const DemoPage = () => {
               <CardContent className="p-8">
                 <div className="text-4xl mb-4">🏠</div>
                 <Heading level={3} className="text-lg mb-3">
-                  Focus Rooms
+                  Kamunity Rooms
                 </Heading>
                 <Text variant="body-small" color="muted" className="mb-4">
                   Create or join dedicated spaces for specific interests. 

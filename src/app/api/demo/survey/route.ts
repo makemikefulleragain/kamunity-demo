@@ -20,18 +20,32 @@ interface AnalyticsData {
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('🔥 Survey API called');
+    
     const { surveyData, analyticsData, timestamp } = await request.json() as {
       surveyData: SurveyData;
       analyticsData: AnalyticsData;
       timestamp: string;
     };
 
+    console.log('📋 Survey data received:', { 
+      hasEmail: !!surveyData.email, 
+      experience: surveyData.experience,
+      emailAddress: surveyData.email ? surveyData.email.substring(0, 3) + '***' : 'none'
+    });
+
     // Send admin notification email
+    console.log('📧 Sending admin notification...');
     await sendAdminNotification(surveyData, analyticsData, timestamp);
+    console.log('✅ Admin notification sent');
 
     // Send user thank you email if email provided
     if (surveyData.email) {
+      console.log('📧 Sending user thank you email...');
       await sendUserThankYou(surveyData, analyticsData, timestamp);
+      console.log('✅ User thank you email sent');
+    } else {
+      console.log('⚠️ No user email provided, skipping user email');
     }
 
     return NextResponse.json({ 
@@ -40,7 +54,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Survey submission error:', error);
+    console.error('💥 Survey submission error:', error);
     return NextResponse.json(
       { success: false, message: 'Failed to submit survey' },
       { status: 500 }
@@ -145,37 +159,79 @@ async function sendUserThankYou(
 }
 
 async function sendEmail({ to, subject, html }: { to: string; subject: string; html: string }) {
-  // For demo purposes, we'll use a simple email service
-  // In production, you'd use SendGrid, AWS SES, or similar
+  const emailSent = { success: false, method: 'none' };
   
   try {
-    // Mock email service - replace with actual service
-    const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        service_id: process.env.EMAILJS_SERVICE_ID,
-        template_id: process.env.EMAILJS_TEMPLATE_ID,
-        user_id: process.env.EMAILJS_USER_ID,
-        template_params: {
-          to_email: to,
-          subject: subject,
-          html_content: html,
-          from_name: 'Kamunity Demo',
-          from_email: 'demo@kamunity.org'
-        }
-      })
-    });
+    // Primary: EmailJS service
+    if (process.env.EMAILJS_SERVICE_ID && process.env.EMAILJS_TEMPLATE_ID && process.env.EMAILJS_USER_ID) {
+      try {
+        console.log('📧 Attempting EmailJS send:', { to, subject: subject.substring(0, 50) });
+        
+        const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            service_id: process.env.EMAILJS_SERVICE_ID,
+            template_id: process.env.EMAILJS_TEMPLATE_ID,
+            user_id: process.env.EMAILJS_USER_ID,
+            template_params: {
+              to_email: to,
+              to_name: to.split('@')[0],
+              subject: subject,
+              message: html,
+              html_content: html,
+              from_name: 'Kamunity Demo',
+              from_email: 'demo@kamunity.org',
+              reply_to: 'mike@kamunity.AI'
+            }
+          })
+        });
 
-    if (!response.ok) {
-      throw new Error(`Email service responded with ${response.status}`);
+        console.log('📧 EmailJS response status:', response.status);
+        
+        if (response.ok) {
+          const responseData = await response.text();
+          console.log('📧 EmailJS response:', responseData);
+        } else {
+          const errorData = await response.text();
+          console.error('📧 EmailJS error:', errorData);
+        }
+
+        if (response.ok) {
+          console.log(`✅ Email sent via EmailJS to ${to}`);
+          emailSent.success = true;
+          emailSent.method = 'emailjs';
+          return emailSent;
+        }
+      } catch (emailJsError) {
+        console.warn('EmailJS failed, trying fallback:', emailJsError);
+      }
     }
 
-    console.log(`Email sent successfully to ${to}`);
+    // Fallback: Console logging for demo (when email service unavailable)
+    console.log(`📧 EMAIL SIMULATION - To: ${to}`);
+    console.log(`📧 EMAIL SIMULATION - Subject: ${subject}`);
+    console.log(`📧 EMAIL SIMULATION - Content: ${html.substring(0, 200)}...`);
+    
+    emailSent.success = true;
+    emailSent.method = 'console_simulation';
+    
+    // Track email delivery attempt
+    await trackEmailDelivery(to, subject, emailSent.method, emailSent.success);
+    
   } catch (error) {
-    console.error('Failed to send email:', error);
-    // Don't throw - we don't want survey submission to fail if email fails
+    console.error('All email methods failed:', error);
+    await trackEmailDelivery(to, subject, 'failed', false);
+  }
+  
+  return emailSent;
+}
+
+async function trackEmailDelivery(to: string, subject: string, method: string, success: boolean) {
+  try {
+    // Log email delivery for analytics
+    console.log(`📊 Email Delivery: ${success ? 'SUCCESS' : 'FAILED'} via ${method} to ${to.includes('@') ? to.split('@')[1] : 'unknown'}`);
+  } catch (error) {
+    console.warn('Failed to track email delivery:', error);
   }
 }

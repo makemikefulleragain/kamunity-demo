@@ -1,14 +1,90 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Home } from 'lucide-react';
 import HubPageTemplate from '@/components/demo/HubPageTemplate';
 import ProgressionBadge from '@/components/demo/ProgressionBadge';
 import { Text, Heading } from '@/components/ui';
-import { roomSeeds } from '@/data/roomSeeds';
+import { roomSeeds, RoomItem } from '@/data/roomSeeds';
 import { trackPageView, trackEngagement } from '@/lib/demo/analytics';
+import { memoryStore } from '@/lib/demo/memoryStore';
 
 export default function RoomsPage() {
+  const [allRooms, setAllRooms] = useState<RoomItem[]>(roomSeeds);
+
+  // Load saved demo rooms from memory store
+  useEffect(() => {
+    const loadSavedRooms = () => {
+      console.log('Loading saved rooms from memory store...');
+      
+      // Force refresh from localStorage
+      memoryStore.refresh();
+      
+      const savedRoomKeys = memoryStore.keys().filter(key => key.startsWith('saved-room-'));
+      console.log('Found saved room keys:', savedRoomKeys);
+      
+      const savedRooms = savedRoomKeys.map(key => {
+        const savedRoom = memoryStore.get(key);
+        console.log('Loading saved room:', savedRoom);
+        return {
+          id: savedRoom.id,
+          title: savedRoom.title,
+          description: savedRoom.description,
+          category: savedRoom.category,
+          engagement: savedRoom.engagement,
+          commentCount: savedRoom.commentCount,
+          tags: savedRoom.tags,
+          createdAt: savedRoom.createdAt,
+          demoType: savedRoom.demoType,
+          roomData: savedRoom.roomData,
+          stats: savedRoom.stats
+        };
+      });
+
+      console.log('Processed saved rooms:', savedRooms);
+      
+      // Combine saved rooms with existing room seeds (saved rooms first)
+      const combinedRooms = [...savedRooms, ...roomSeeds];
+      console.log('Combined rooms total:', combinedRooms.length);
+      setAllRooms(combinedRooms);
+    };
+
+    // Initial load
+    loadSavedRooms();
+    
+    // Listen for URL parameters to force refresh
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('refresh') || urlParams.get('t')) {
+      console.log('Refresh parameter detected, forcing room reload...');
+      setTimeout(loadSavedRooms, 100);
+    }
+    
+    // Also listen for storage events in case rooms are saved from other tabs
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'kamunity-demo-store') {
+        console.log('Storage change detected, reloading rooms...');
+        loadSavedRooms();
+      }
+    };
+    
+    // Listen for focus events to reload when tab becomes active
+    const handleFocus = () => {
+      console.log('Tab focus detected, reloading rooms...');
+      loadSavedRooms();
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('focus', handleFocus);
+    
+    // Set up interval to check for new rooms periodically
+    const interval = setInterval(loadSavedRooms, 3000);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('focus', handleFocus);
+      clearInterval(interval);
+    };
+  }, []);
 
 
   return (
@@ -28,7 +104,7 @@ export default function RoomsPage() {
         title: 'ROOMS',
         subtitle: 'Collaborative spaces'
       }}
-      cards={roomSeeds}
+      cards={allRooms}
       endMessage={{
         title: 'Ready to Form a Club?',
         description: 'When rooms build strong communities and governance structures, members can vote to promote them to clubs with expanded capabilities and autonomy.',

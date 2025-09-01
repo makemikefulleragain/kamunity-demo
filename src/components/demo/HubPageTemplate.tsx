@@ -42,6 +42,7 @@ interface HubPageTemplateProps {
     createdAt: string;
     promotionStatus?: 'eligible' | 'promoted' | 'none';
     promotionTarget?: string;
+    demoType?: string;
   }>;
   endMessage: {
     title: string;
@@ -132,14 +133,24 @@ const HubPageTemplate: React.FC<HubPageTemplateProps> = ({
                   {heroDescription}
                 </Text>
                 
-                {/* Quick Stats */}
-                <div className="flex flex-wrap justify-center lg:justify-start gap-6 text-sm">
+                {/* Quick Stats and Design Button */}
+                <div className="flex flex-wrap justify-center lg:justify-start items-center gap-6 text-sm">
                   {heroStats.map((stat, index) => (
                     <div key={index} className="text-center">
                       <div className="font-semibold text-primary-600">{stat.value}</div>
                       <div className="text-neutral-600">{stat.label}</div>
                     </div>
                   ))}
+                  
+                  {/* Design a Room Button - only show for Rooms hub */}
+                  {hubName === 'Rooms' && (
+                    <Link 
+                      href="/rooms/generate"
+                      className="ml-4 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl font-semibold text-base flex items-center gap-2"
+                    >
+                      🎨 Design a Room
+                    </Link>
+                  )}
                 </div>
               </div>
             </div>
@@ -172,10 +183,12 @@ const HubPageTemplate: React.FC<HubPageTemplateProps> = ({
 
           <Grid cols={1} responsive={{ md: 2, lg: 3 }} gap="lg">
             {cards.map((card) => {
-              // Special handling for lore campaign room
+              // Special handling for different room types
               let cardLink;
               if (card.id === 'room-lore-campaign') {
                 cardLink = '/rooms/lore-campaign';
+              } else if (card.demoType === 'saved-focus-room') {
+                cardLink = `/rooms/${card.id}/saved-demo`;
               } else {
                 cardLink = `/${hubName.toLowerCase()}/${card.id}`;
               }
@@ -269,7 +282,7 @@ const HubPageTemplate: React.FC<HubPageTemplateProps> = ({
         </div>
         
         {/* Related Content Sidebar */}
-        <RelatedContentSidebar currentHub={hubName.toLowerCase()} />
+        <RelatedContentSidebar />
       </div>
     </MobileOptimizations>
   );

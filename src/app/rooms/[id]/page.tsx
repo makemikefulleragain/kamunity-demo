@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
-import { RoomLayout, defaultTheme, type RoomSection } from '@/components/rooms/RoomLayout'
+import { RoomLayout, type RoomSection } from '@/components/rooms/RoomLayout'
 import { KaiAssistant, kaiPersonalities } from '@/components/rooms/KaiAssistant'
 import { SimulationEngine, simulationConfigs, createInitialSimulationData, type SimulationData } from '@/components/rooms/SimulationEngine'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
@@ -357,7 +357,7 @@ export default function GenericRoomPage() {
       <RoomLayout
         title={roomData.name}
         description={roomData.description}
-        theme={defaultTheme}
+        theme={undefined}
         sections={sections}
         hero={heroSection}
         sidebar={sidebar}

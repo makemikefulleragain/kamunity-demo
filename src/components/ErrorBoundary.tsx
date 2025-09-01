@@ -32,15 +32,12 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
     // Log to memory store for demo analytics
     if (typeof window !== 'undefined') {
       try {
-        const { memoryStore } = require('@/lib/memoryStore')
-        const sessionId = memoryStore.getSessionId()
-        memoryStore.trackUserAction(sessionId, {
-          type: 'error_boundary',
-          target: error.message,
-          metadata: {
+        import('@/lib/demo/memoryStore').then(({ memoryStore }) => {
+          memoryStore.track('error_boundary', {
+            error: error.message,
             stack: error.stack,
             componentStack: errorInfo.componentStack
-          }
+          })
         })
       } catch (e) {
         console.error('Failed to log error to memory store:', e)

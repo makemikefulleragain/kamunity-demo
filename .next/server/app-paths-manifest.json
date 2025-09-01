@@ -1,0 +1,8 @@
+{
+  "/rooms/[id]/demo/page": "app/rooms/[id]/demo/page.js",
+  "/rooms/generate/page": "app/rooms/generate/page.js",
+  "/rooms/page": "app/rooms/page.js",
+  "/rooms/[id]/saved-demo/page": "app/rooms/[id]/saved-demo/page.js",
+  "/welcome/page": "app/welcome/page.js",
+  "/_not-found/page": "app/_not-found/page.js"
+}
