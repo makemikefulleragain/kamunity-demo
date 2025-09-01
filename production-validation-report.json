@@ -1,0 +1,90 @@
+{
+  "timestamp": "2025-09-01T06:06:21.170Z",
+  "environment": "unknown",
+  "tests": [
+    {
+      "name": "EmailJS Environment Variables",
+      "status": "fail",
+      "details": "Missing variables: EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, EMAILJS_USER_ID",
+      "recommendation": "Add missing EmailJS environment variables to production environment",
+      "timestamp": "2025-09-01T06:06:21.207Z"
+    },
+    {
+      "name": "localStorage SSR Compatibility",
+      "status": "pass",
+      "details": "memoryStore handles server-side rendering correctly",
+      "recommendation": "",
+      "timestamp": "2025-09-01T06:06:21.208Z"
+    },
+    {
+      "name": "Survey Email Template",
+      "status": "pass",
+      "details": "Template structure is complete",
+      "recommendation": "",
+      "timestamp": "2025-09-01T06:06:21.210Z"
+    },
+    {
+      "name": "Spec Email Template",
+      "status": "pass",
+      "details": "Template structure is complete",
+      "recommendation": "",
+      "timestamp": "2025-09-01T06:06:21.210Z"
+    },
+    {
+      "name": "Room Spec Email Template",
+      "status": "pass",
+      "details": "Template structure is complete",
+      "recommendation": "",
+      "timestamp": "2025-09-01T06:06:21.211Z"
+    },
+    {
+      "name": "API Endpoint /api/demo/survey",
+      "status": "fail",
+      "details": "Connection failed: ",
+      "recommendation": "Verify deployment and network connectivity",
+      "timestamp": "2025-09-01T06:06:21.312Z"
+    },
+    {
+      "name": "API Endpoint /api/demo/spec-email",
+      "status": "fail",
+      "details": "Connection failed: ",
+      "recommendation": "Verify deployment and network connectivity",
+      "timestamp": "2025-09-01T06:06:21.323Z"
+    },
+    {
+      "name": "API Endpoint /api/demo/room-spec-email",
+      "status": "fail",
+      "details": "Connection failed: ",
+      "recommendation": "Verify deployment and network connectivity",
+      "timestamp": "2025-09-01T06:06:21.332Z"
+    }
+  ],
+  "summary": {
+    "total": 8,
+    "passed": 4,
+    "failed": 4,
+    "warnings": 0
+  },
+  "recommendations": [
+    {
+      "test": "EmailJS Environment Variables",
+      "recommendation": "Add missing EmailJS environment variables to production environment",
+      "priority": "high"
+    },
+    {
+      "test": "API Endpoint /api/demo/survey",
+      "recommendation": "Verify deployment and network connectivity",
+      "priority": "high"
+    },
+    {
+      "test": "API Endpoint /api/demo/spec-email",
+      "recommendation": "Verify deployment and network connectivity",
+      "priority": "high"
+    },
+    {
+      "test": "API Endpoint /api/demo/room-spec-email",
+      "recommendation": "Verify deployment and network connectivity",
+      "priority": "high"
+    }
+  ]
+}

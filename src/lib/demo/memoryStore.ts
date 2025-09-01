@@ -4,13 +4,38 @@ class MemoryStore {
   private events: Array<{ event: string; data: any; timestamp: Date }> = [];
   private storageKey = 'kamunity-demo-store';
   private eventsKey = 'kamunity-demo-events';
+  private isClient = false;
 
   constructor() {
-    this.loadFromStorage();
+    // Only initialize localStorage on client side
+    if (typeof window !== 'undefined') {
+      this.isClient = true;
+      this.loadFromStorage();
+      this.setupStorageListener();
+    }
+  }
+
+  // Setup cross-tab communication listener
+  private setupStorageListener(): void {
+    if (!this.isClient) return;
+    
+    window.addEventListener('storage', (e) => {
+      if (e.key === this.storageKey && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          this.store = new Map(Object.entries(parsed));
+          console.log('🔄 MemoryStore synced from another tab');
+        } catch (error) {
+          console.warn('Failed to sync from storage event:', error);
+        }
+      }
+    });
   }
 
   // Load data from localStorage
   private loadFromStorage(): void {
+    if (!this.isClient) return;
+    
     try {
       const storedData = localStorage.getItem(this.storageKey);
       if (storedData) {
@@ -29,17 +54,15 @@ class MemoryStore {
 
   // Save data to localStorage
   private saveToStorage(): void {
+    if (!this.isClient) return;
+    
     try {
       const storeObject = Object.fromEntries(this.store);
       localStorage.setItem(this.storageKey, JSON.stringify(storeObject));
       localStorage.setItem(this.eventsKey, JSON.stringify(this.events));
       
-      // Trigger storage event for cross-tab communication
-      window.dispatchEvent(new StorageEvent('storage', {
-        key: this.storageKey,
-        newValue: JSON.stringify(storeObject),
-        storageArea: localStorage
-      }));
+      // Natural storage event will trigger for other tabs
+      // No need to manually dispatch as it can cause loops
     } catch (error) {
       console.warn('Failed to save to localStorage:', error);
     }
@@ -102,6 +125,15 @@ class MemoryStore {
   // Force refresh from localStorage
   refresh(): void {
     this.loadFromStorage();
+  }
+
+  // Get storage status for debugging
+  getStorageStatus(): { isClient: boolean; storeSize: number; eventsCount: number } {
+    return {
+      isClient: this.isClient,
+      storeSize: this.store.size,
+      eventsCount: this.events.length
+    };
   }
 }
 

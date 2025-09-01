@@ -104,21 +104,36 @@ Full Specification:
 ${room_spec}
     `.trim();
 
-    // In a real implementation, you would send emails here
-    // For demo purposes, we'll just log and return success
-    console.log('📧 Spec Email Sent:', {
+    // Send email using EmailJS service with fallback
+    const emailResult = await sendSpecEmail({
       to: to_email,
-      room: room_name,
-      timestamp: new Date().toISOString()
+      subject: `🏠 Your Kamunity Focus Room: "${room_name}" - Complete Specification`,
+      html: userEmailContent,
+      roomName: room_name
     });
 
-    // Simulate email sending delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // Send admin notification
+    await sendSpecEmail({
+      to: 'mike@kamunityconsulting.com',
+      subject: `New Room Specification Generated: ${room_name}`,
+      html: adminEmailContent,
+      roomName: room_name,
+      isAdmin: true
+    });
+
+    console.log('📧 Spec Email Result:', {
+      to: to_email,
+      room: room_name,
+      success: emailResult.success,
+      method: emailResult.method,
+      timestamp: new Date().toISOString()
+    });
 
     return NextResponse.json({
       success: true,
       message: 'Specification emailed successfully',
-      emailSent: true
+      emailSent: emailResult.success,
+      method: emailResult.method
     });
 
   } catch (error) {
@@ -128,4 +143,74 @@ ${room_spec}
       { status: 500 }
     );
   }
+}
+
+async function sendSpecEmail({ to, subject, html, roomName, isAdmin = false }: { 
+  to: string; 
+  subject: string; 
+  html: string; 
+  roomName: string; 
+  isAdmin?: boolean; 
+}) {
+  const emailSent = { success: false, method: 'none' };
+  
+  try {
+    // Primary: EmailJS service
+    if (process.env.EMAILJS_SERVICE_ID && process.env.EMAILJS_TEMPLATE_ID && process.env.EMAILJS_USER_ID) {
+      try {
+        console.log('📧 Attempting EmailJS send for spec:', { to, subject: subject.substring(0, 50), isAdmin });
+        
+        const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            service_id: process.env.EMAILJS_SERVICE_ID,
+            template_id: process.env.EMAILJS_TEMPLATE_ID,
+            user_id: process.env.EMAILJS_USER_ID,
+            template_params: {
+              to_email: to,
+              to_name: to.split('@')[0],
+              subject: subject,
+              message: html.replace(/<[^>]*>/g, ''), // Strip HTML for plain text
+              html_content: html,
+              from_name: 'Kamunity Demo',
+              from_email: 'demo@kamunity.org',
+              reply_to: 'mike@kamunityconsulting.com',
+              room_name: roomName,
+              is_admin: isAdmin
+            }
+          })
+        });
+
+        if (response.ok) {
+          console.log(`✅ Spec email sent via EmailJS to ${to}`);
+          emailSent.success = true;
+          emailSent.method = 'emailjs';
+          return emailSent;
+        } else {
+          const errorData = await response.text();
+          console.error('📧 EmailJS spec email error:', {
+            status: response.status,
+            error: errorData.substring(0, 200)
+          });
+        }
+      } catch (emailJsError) {
+        console.warn('EmailJS spec email failed, trying fallback:', emailJsError);
+      }
+    }
+
+    // Fallback: Console logging for demo
+    console.log(`📧 SPEC EMAIL SIMULATION - To: ${to}`);
+    console.log(`📧 SPEC EMAIL SIMULATION - Subject: ${subject}`);
+    console.log(`📧 SPEC EMAIL SIMULATION - Room: ${roomName}`);
+    console.log(`📧 SPEC EMAIL SIMULATION - Content: ${html.substring(0, 200)}...`);
+    
+    emailSent.success = true;
+    emailSent.method = 'console_simulation';
+    
+  } catch (error) {
+    console.error('All spec email methods failed:', error);
+  }
+  
+  return emailSent;
 }

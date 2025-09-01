@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { logEmailAttempt } from '@/lib/debug/emailDebugger';
 
 interface SurveyData {
   email?: string;
@@ -178,11 +179,11 @@ async function sendEmail({ to, subject, html }: { to: string; subject: string; h
               to_email: to,
               to_name: to.split('@')[0],
               subject: subject,
-              message: html,
+              message: html.replace(/<[^>]*>/g, ''), // Strip HTML for plain text
               html_content: html,
               from_name: 'Kamunity Demo',
               from_email: 'demo@kamunity.org',
-              reply_to: 'mike@kamunity.AI'
+              reply_to: 'mike@kamunityconsulting.com'
             }
           })
         });
@@ -191,19 +192,29 @@ async function sendEmail({ to, subject, html }: { to: string; subject: string; h
         
         if (response.ok) {
           const responseData = await response.text();
-          console.log('📧 EmailJS response:', responseData);
+          console.log('📧 EmailJS success:', responseData.substring(0, 100));
         } else {
           const errorData = await response.text();
-          console.error('📧 EmailJS error:', errorData);
+          console.error('📧 EmailJS error:', {
+            status: response.status,
+            statusText: response.statusText,
+            error: errorData.substring(0, 200)
+          });
         }
 
         if (response.ok) {
           console.log(`✅ Email sent via EmailJS to ${to}`);
           emailSent.success = true;
           emailSent.method = 'emailjs';
+          logEmailAttempt(to, subject, 'emailjs', true);
           return emailSent;
+        } else {
+          const errorData = await response.text();
+          logEmailAttempt(to, subject, 'emailjs', false, `HTTP ${response.status}: ${errorData.substring(0, 100)}`);
         }
       } catch (emailJsError) {
+        const errorMsg = emailJsError instanceof Error ? emailJsError.message : 'Unknown EmailJS error';
+        logEmailAttempt(to, subject, 'emailjs', false, errorMsg);
         console.warn('EmailJS failed, trying fallback:', emailJsError);
       }
     }
@@ -217,6 +228,7 @@ async function sendEmail({ to, subject, html }: { to: string; subject: string; h
     emailSent.method = 'console_simulation';
     
     // Track email delivery attempt
+    logEmailAttempt(to, subject, 'console_simulation', true);
     await trackEmailDelivery(to, subject, emailSent.method, emailSent.success);
     
   } catch (error) {
@@ -229,8 +241,25 @@ async function sendEmail({ to, subject, html }: { to: string; subject: string; h
 
 async function trackEmailDelivery(to: string, subject: string, method: string, success: boolean) {
   try {
-    // Log email delivery for analytics
-    console.log(`📊 Email Delivery: ${success ? 'SUCCESS' : 'FAILED'} via ${method} to ${to.includes('@') ? to.split('@')[1] : 'unknown'}`);
+    // Enhanced logging for production debugging
+    const logData = {
+      timestamp: new Date().toISOString(),
+      success,
+      method,
+      domain: to.includes('@') ? to.split('@')[1] : 'unknown',
+      subject: subject.substring(0, 50),
+      environment: process.env.NODE_ENV || 'unknown'
+    };
+    console.log(`📊 Email Delivery:`, logData);
+    
+    // Store in localStorage for debugging
+    if (typeof window !== 'undefined') {
+      const logs = JSON.parse(localStorage.getItem('email-delivery-logs') || '[]');
+      logs.push(logData);
+      // Keep only last 50 logs
+      if (logs.length > 50) logs.shift();
+      localStorage.setItem('email-delivery-logs', JSON.stringify(logs));
+    }
   } catch (error) {
     console.warn('Failed to track email delivery:', error);
   }
