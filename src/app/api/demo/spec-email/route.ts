@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { sendEmailWithFallback } from '@/lib/email/resend-service';
+import { generateRoomSpecUserEmail, generateRoomSpecAdminEmail } from '@/lib/email/templates/room-spec-email';
 
 export async function POST(request: NextRequest) {
   try {
@@ -108,36 +110,47 @@ Full Specification:
 ${room_spec}
     `.trim();
 
-    // Send email using EmailJS service with fallback
-    const emailResult = await sendSpecEmail({
+    // Send user email
+    console.log('📧 Sending room spec email to user...');
+    const userEmailData = {
       to: to_email,
       subject: `🏠 Your Kamunity Focus Room: "${room_name}" - Complete Specification`,
-      html: userEmailContent,
-      roomName: room_name
-    });
+      html: generateRoomSpecUserEmail({ title: room_name, description: room_purpose, roomData: parsedSpec }, true),
+      from: 'Kamunity Demo <demo@kamunity.org>'
+    };
 
+    const userResult = await sendEmailWithFallback(userEmailData);
+    
     // Send admin notification
-    await sendSpecEmail({
+    console.log('📧 Sending room spec notification to admin...');
+    const adminEmailData = {
       to: 'mike@kamunityconsulting.com',
-      subject: `New Room Specification Generated: ${room_name}`,
-      html: adminEmailContent,
-      roomName: room_name,
-      isAdmin: true
-    });
+      subject: `New Focus Room Spec Request - ${room_name}`,
+      html: generateRoomSpecAdminEmail({ title: room_name, description: room_purpose, roomData: parsedSpec }, user_email || to_email, true),
+      from: 'Kamunity Demo <demo@kamunity.org>'
+    };
 
-    console.log('📧 Spec Email Result:', {
+    const adminResult = await sendEmailWithFallback(adminEmailData);
+
+    console.log('📧 Spec Email Results:', {
       to: to_email,
       room: room_name,
-      success: emailResult.success,
-      method: emailResult.method,
+      user: { success: userResult.success, method: userResult.method },
+      admin: { success: adminResult.success, method: adminResult.method },
       timestamp: new Date().toISOString()
     });
 
     return NextResponse.json({
       success: true,
       message: 'Specification emailed successfully',
-      emailSent: emailResult.success,
-      method: emailResult.method
+      emailStatus: {
+        user: userResult,
+        admin: adminResult
+      },
+      debug: {
+        timestamp: new Date().toISOString(),
+        resendConfigured: !!process.env.RESEND_API_KEY
+      }
     });
 
   } catch (error) {
@@ -149,67 +162,3 @@ ${room_spec}
   }
 }
 
-async function sendSpecEmail({ to, subject, html, roomName, isAdmin = false }: { 
-  to: string; 
-  subject: string; 
-  html: string; 
-  roomName: string; 
-  isAdmin?: boolean; 
-}) {
-  const emailSent = { success: false, method: 'none' };
-  
-  try {
-    // Primary: EmailJS service
-    if (process.env.EMAILJS_SERVICE_ID && process.env.EMAILJS_TEMPLATE_ID && process.env.EMAILJS_USER_ID) {
-      try {
-        console.log('📧 Attempting EmailJS send for spec:', { to, subject: subject.substring(0, 50), isAdmin });
-        
-        const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            service_id: process.env.EMAILJS_SERVICE_ID,
-            template_id: process.env.EMAILJS_TEMPLATE_ID,
-            user_id: process.env.EMAILJS_USER_ID,
-            template_params: {
-              to_email: to,
-              subject: subject,
-              html_content: html,
-              from_name: 'Kamunity Demo',
-              from_email: 'demo@kamunity.org'
-            }
-          })
-        });
-
-        if (response.ok) {
-          console.log(`✅ Spec email sent via EmailJS to ${to}`);
-          emailSent.success = true;
-          emailSent.method = 'emailjs';
-          return emailSent;
-        } else {
-          const errorData = await response.text();
-          console.error('📧 EmailJS spec email error:', {
-            status: response.status,
-            error: errorData.substring(0, 200)
-          });
-        }
-      } catch (emailJsError) {
-        console.warn('EmailJS spec email failed, trying fallback:', emailJsError);
-      }
-    }
-
-    // Fallback: Console logging for demo
-    console.log(`📧 SPEC EMAIL SIMULATION - To: ${to}`);
-    console.log(`📧 SPEC EMAIL SIMULATION - Subject: ${subject}`);
-    console.log(`📧 SPEC EMAIL SIMULATION - Room: ${roomName}`);
-    console.log(`📧 SPEC EMAIL SIMULATION - Content: ${html.substring(0, 200)}...`);
-    
-    emailSent.success = true;
-    emailSent.method = 'console_simulation';
-    
-  } catch (error) {
-    console.error('All spec email methods failed:', error);
-  }
-  
-  return emailSent;
-}
