@@ -77,6 +77,11 @@ export default function GeneratedRoom({ roomData, onBack, onEnhance }: Generated
       
       // Send email with room spec
       try {
+        console.log('📧 Sending room spec email request:', { 
+          roomName: roomData.name,
+          hasRoomData: !!roomData
+        });
+        
         const emailResponse = await fetch('/api/demo/room-spec-email', {
           method: 'POST',
           headers: {

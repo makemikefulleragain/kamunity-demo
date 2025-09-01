@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
-    const { roomData, userEmail } = await request.json();
+    console.log('🔥 Room spec email API called - Entry point reached');
+    
+    const body = await request.json();
+    console.log('📋 Raw room spec email request body:', { hasData: !!body, keys: Object.keys(body || {}) });
+    
+    const { roomData, userEmail } = body;
 
     // Generate comprehensive room specification email content
     const emailContent = `

@@ -2,7 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('🔥 Spec email API called - Entry point reached');
+    
     const body = await request.json();
+    console.log('📋 Raw spec email request body:', { hasData: !!body, keys: Object.keys(body || {}) });
+    
     const { to_email, user_email, room_name, room_purpose, room_spec, timestamp } = body;
 
     // Validate required fields

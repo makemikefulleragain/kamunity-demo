@@ -187,6 +187,12 @@ export default function KamunityRoomGenerator({ onComplete, onCancel }: Kamunity
         timestamp: new Date().toISOString()
       };
       
+      console.log('📧 Sending spec email request:', { 
+        email: emailData.user_email ? emailData.user_email.substring(0, 3) + '***' : 'none',
+        hasSpec: !!emailData.room_spec,
+        timestamp: emailData.timestamp
+      });
+      
       const response = await fetch('/api/demo/spec-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
