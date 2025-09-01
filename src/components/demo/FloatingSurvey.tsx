@@ -167,7 +167,12 @@ const FloatingSurvey: React.FC<FloatingSurveyProps> = ({
   };
 
   const handleSubmit = async () => {
-    if (isSubmitting) return;
+    console.log('🎯 handleSubmit called - Survey submission starting');
+    
+    if (isSubmitting) {
+      console.log('⚠️ Already submitting, returning early');
+      return;
+    }
 
     setIsSubmitting(true);
     toast.loading('Sending your feedback...');
@@ -175,9 +180,16 @@ const FloatingSurvey: React.FC<FloatingSurveyProps> = ({
     try {
       // Collect analytics data to include in email
       const analyticsData = demoAnalytics.getBehaviorSummary();
+      console.log('📊 Analytics data collected:', analyticsData);
       
       // Submit survey data
-      console.log('🚀 Submitting survey to API:', { surveyData, analyticsData });
+      console.log('🚀 Submitting survey to API:', { 
+        surveyData: {
+          ...surveyData,
+          email: surveyData.email ? surveyData.email.substring(0, 3) + '***' : 'none'
+        }, 
+        analyticsData 
+      });
       
       const response = await fetch('/api/demo/survey', {
         method: 'POST',

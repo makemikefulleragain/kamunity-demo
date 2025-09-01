@@ -21,18 +21,30 @@ interface AnalyticsData {
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('🔥 Survey API called');
+    console.log('🔥 Survey API called - Entry point reached');
     
-    const { surveyData, analyticsData, timestamp } = await request.json() as {
+    const body = await request.json();
+    console.log('📋 Raw request body:', { hasData: !!body, keys: Object.keys(body || {}) });
+    
+    const { surveyData, analyticsData, timestamp } = body as {
       surveyData: SurveyData;
       analyticsData: AnalyticsData;
       timestamp: string;
     };
 
     console.log('📋 Survey data received:', { 
-      hasEmail: !!surveyData.email, 
-      experience: surveyData.experience,
-      emailAddress: surveyData.email ? surveyData.email.substring(0, 3) + '***' : 'none'
+      hasEmail: !!surveyData?.email, 
+      experience: surveyData?.experience,
+      emailAddress: surveyData?.email ? surveyData.email.substring(0, 3) + '***' : 'none'
+    });
+
+    // Check EmailJS configuration
+    const emailJSConfigured = !!(process.env.EMAILJS_SERVICE_ID && process.env.EMAILJS_TEMPLATE_ID && process.env.EMAILJS_USER_ID);
+    console.log('📧 EmailJS Configuration Check:', {
+      configured: emailJSConfigured,
+      hasServiceId: !!process.env.EMAILJS_SERVICE_ID,
+      hasTemplateId: !!process.env.EMAILJS_TEMPLATE_ID,
+      hasUserId: !!process.env.EMAILJS_USER_ID
     });
 
     // Send admin notification email
@@ -41,7 +53,7 @@ export async function POST(request: NextRequest) {
     console.log('✅ Admin notification sent');
 
     // Send user thank you email if email provided
-    if (surveyData.email) {
+    if (surveyData?.email) {
       console.log('📧 Sending user thank you email...');
       await sendUserThankYou(surveyData, analyticsData, timestamp);
       console.log('✅ User thank you email sent');
@@ -160,9 +172,21 @@ async function sendUserThankYou(
 }
 
 async function sendEmail({ to, subject, html }: { to: string; subject: string; html: string }) {
+  console.log('📧 sendEmail function called:', { to: to.substring(0, 10) + '***', subject: subject.substring(0, 30) });
+  
   const emailSent = { success: false, method: 'none' };
   
   try {
+    console.log('📧 Checking EmailJS environment variables...');
+    console.log('📧 Environment check:', {
+      NODE_ENV: process.env.NODE_ENV,
+      hasServiceId: !!process.env.EMAILJS_SERVICE_ID,
+      hasTemplateId: !!process.env.EMAILJS_TEMPLATE_ID,
+      hasUserId: !!process.env.EMAILJS_USER_ID,
+      serviceId: process.env.EMAILJS_SERVICE_ID ? process.env.EMAILJS_SERVICE_ID.substring(0, 10) + '***' : 'MISSING',
+      templateId: process.env.EMAILJS_TEMPLATE_ID ? process.env.EMAILJS_TEMPLATE_ID.substring(0, 10) + '***' : 'MISSING'
+    });
+    
     // Primary: EmailJS service
     if (process.env.EMAILJS_SERVICE_ID && process.env.EMAILJS_TEMPLATE_ID && process.env.EMAILJS_USER_ID) {
       try {
