@@ -191,6 +191,11 @@ async function sendEmail({ to, subject, html }: { to: string; subject: string; h
     if (process.env.EMAILJS_SERVICE_ID && process.env.EMAILJS_TEMPLATE_ID && process.env.EMAILJS_USER_ID) {
       try {
         console.log('📧 Attempting EmailJS send:', { to, subject: subject.substring(0, 50) });
+        console.log('📧 EmailJS payload:', {
+          service_id: process.env.EMAILJS_SERVICE_ID,
+          template_id: process.env.EMAILJS_TEMPLATE_ID,
+          user_id: process.env.EMAILJS_USER_ID ? process.env.EMAILJS_USER_ID.substring(0, 10) + '***' : 'MISSING'
+        });
         
         const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
           method: 'POST',
@@ -213,16 +218,16 @@ async function sendEmail({ to, subject, html }: { to: string; subject: string; h
         });
 
         console.log('📧 EmailJS response status:', response.status);
+        const responseData = await response.text();
+        console.log('📧 EmailJS full response:', responseData);
         
         if (response.ok) {
-          const responseData = await response.text();
           console.log('📧 EmailJS success:', responseData.substring(0, 100));
         } else {
-          const errorData = await response.text();
           console.error('📧 EmailJS error:', {
             status: response.status,
             statusText: response.statusText,
-            error: errorData.substring(0, 200)
+            error: responseData.substring(0, 200)
           });
         }
 
