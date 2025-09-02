@@ -37,8 +37,8 @@ export default function GeneratedRoom({ roomData, onBack, onEnhance }: Generated
       }
 
       const savedRoomData = {
-        id: `saved-demo-${Date.now()}`,
-        title: `${roomData.name} (Demo)`,
+        id: 'saved-demo-' + Date.now(),
+        title: roomData.name + ' (Demo)',
         description: roomData.purpose || 'A saved demo room from the Focus Room Generator',
         category: 'Saved Demo',
         engagement: stats.engagement,
@@ -46,8 +46,8 @@ export default function GeneratedRoom({ roomData, onBack, onEnhance }: Generated
         tags: ['demo', 'saved', 'focus-room', ...(roomData.tools?.slice(0, 2) || [])],
         createdAt: new Date().toISOString(),
         demoType: 'saved-focus-room',
-        roomData: roomData, // Store full room data for recreation
-        stats: stats // Store current stats
+        roomData: roomData,
+        stats: stats
       };
 
       console.log('Attempting to save room data:', savedRoomData);
@@ -74,7 +74,7 @@ export default function GeneratedRoom({ roomData, onBack, onEnhance }: Generated
       
       // Track the save event
       await HybridStorage.saveUserTracking({
-        sessionId: `session-${Date.now()}`,
+        sessionId: 'session-' + Date.now(),
         action: 'demo_room_saved',
         page: 'generated-room',
         timestamp: new Date().toISOString(),
@@ -93,7 +93,7 @@ export default function GeneratedRoom({ roomData, onBack, onEnhance }: Generated
       
       // Send email with room spec
       try {
-        console.log('📧 Sending room spec email request:', { 
+        console.log('Sending room spec email request:', { 
           roomName: roomData.name,
           hasRoomData: !!roomData
         });
@@ -105,7 +105,7 @@ export default function GeneratedRoom({ roomData, onBack, onEnhance }: Generated
           },
           body: JSON.stringify({
             roomData: savedRoomData,
-            userEmail: 'mike@kamunityconsulting.com' // Default admin email
+            userEmail: 'mike@kamunityconsulting.com'
           }),
         });
         
@@ -123,7 +123,7 @@ export default function GeneratedRoom({ roomData, onBack, onEnhance }: Generated
             body: JSON.stringify({
               roomData: {
                 ...roomData,
-                sessionId: `session_${Date.now()}`,
+                sessionId: 'session_' + Date.now(),
                 analytics: {
                   timeSpent: '5-10 minutes',
                   interactions: Math.floor(Math.random() * 20) + 5,
@@ -131,7 +131,7 @@ export default function GeneratedRoom({ roomData, onBack, onEnhance }: Generated
                 }
               },
               userEmail: 'mike@kamunityconsulting.com',
-              sessionId: `session_${Date.now()}`,
+              sessionId: 'session_' + Date.now(),
               sourceType: 'generator'
             })
           });
@@ -142,8 +142,13 @@ export default function GeneratedRoom({ roomData, onBack, onEnhance }: Generated
       } catch (error) {
         console.error('Error saving demo room:', error);
         const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-        alert(`❌ Failed to save demo room: ${errorMessage}\n\nPlease try again.`);
+        alert('Failed to save demo room: ' + errorMessage + '\n\nPlease try again.');
       }
+    } catch (error) {
+      console.error('Error saving demo room:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      alert('Failed to save demo room: ' + errorMessage + '\n\nPlease try again.');
+    }
   }, [roomData, stats]);
 
   // Determine simulation intensity based on completeness
