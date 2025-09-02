@@ -140,10 +140,10 @@ export default function GeneratedRoom({ roomData, onBack, onEnhance }: Generated
         }
         
       } catch (error) {
-      console.error('Error saving demo room:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      alert(`❌ Failed to save demo room: ${errorMessage}\n\nPlease try again.`);
-    }
+        console.error('Error saving demo room:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        alert(`❌ Failed to save demo room: ${errorMessage}\n\nPlease try again.`);
+      }
   }, [roomData, stats]);
 
   // Determine simulation intensity based on completeness
