@@ -6,3 +6,6 @@ node_modules
 
 # Archive directory (reference material, not part of live site)
 archive/
+
+# Local Netlify folder
+.netlify

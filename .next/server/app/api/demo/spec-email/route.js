@@ -1,4 +1,4 @@
-"use strict";(()=>{var e={};e.id=754,e.ids=[754],e.modules={20399:e=>{e.exports=require("next/dist/compiled/next-server/app-page.runtime.prod.js")},30517:e=>{e.exports=require("next/dist/compiled/next-server/app-route.runtime.prod.js")},25380:(e,o,t)=>{t.r(o),t.d(o,{originalPathname:()=>g,patchFetch:()=>f,requestAsyncStorage:()=>m,routeModule:()=>l,serverHooks:()=>u,staticGenerationAsyncStorage:()=>c});var i={};t.r(i),t.d(i,{POST:()=>d});var r=t(49303),n=t(88716),a=t(60670),s=t(87070),p=t(76743);async function d(e){try{let o;console.log("\uD83D\uDD25 Spec email API called - Entry point reached");let t=await e.json();console.log("\uD83D\uDCCB Raw spec email request body:",{hasData:!!t,keys:Object.keys(t||{})});let{to_email:i,user_email:r,room_name:n,room_purpose:a,room_spec:d,timestamp:l}=t;if(!i||!n||!d)return s.NextResponse.json({error:"Missing required fields"},{status:400});try{o=JSON.parse(d)}catch{o=null}`
+"use strict";(()=>{var e={};e.id=754,e.ids=[754],e.modules={20399:e=>{e.exports=require("next/dist/compiled/next-server/app-page.runtime.prod.js")},30517:e=>{e.exports=require("next/dist/compiled/next-server/app-route.runtime.prod.js")},25380:(e,o,t)=>{t.r(o),t.d(o,{originalPathname:()=>u,patchFetch:()=>f,requestAsyncStorage:()=>c,routeModule:()=>l,serverHooks:()=>g,staticGenerationAsyncStorage:()=>m});var i={};t.r(i),t.d(i,{POST:()=>d});var r=t(49303),n=t(88716),a=t(60670),s=t(87070),p=t(76743);async function d(e){try{let o;console.log("\uD83D\uDD25 Spec email API called - Entry point reached");let t=await e.json();console.log("\uD83D\uDCCB Raw spec email request body:",{hasData:!!t,keys:Object.keys(t||{})});let{to_email:i,user_email:r,room_name:n,room_purpose:a,room_spec:d,timestamp:l}=t;if(!i||!n||!d)return s.NextResponse.json({error:"Missing required fields"},{status:400});try{o=JSON.parse(d)}catch{o=null}`
 G'day!
 
 Thank you for using the Kamunity Focus Room Generator! Your comprehensive Focus Room specification is ready.
@@ -68,7 +68,7 @@ Generated: ${new Date(l).toLocaleString()}
 
 Full Specification:
 ${d}
-    `.trim(),console.log("\uD83D\uDCE7 Sending room spec email to user...");let m={to:i,subject:`🏠 Your Kamunity Focus Room: "${n}" - Complete Specification`,html:function(e,o=!1){let t=e.id||"demo";return`
+    `.trim(),console.log("\uD83D\uDCE7 Sending room spec email to user...");let c={to:i,subject:`🏠 Your Kamunity Focus Room: "${n}" - Complete Specification`,html:function(e,o=!1){let t=e.id||"demo";return`
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc;">
       <div style="background: white; border-radius: 12px; padding: 30px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
         
@@ -125,33 +125,65 @@ ${d}
         </div>
       </div>
     </div>
-  `}({title:n,description:a,roomData:o},!0),from:"Kamunity Demo <demo@kamunity.org>"},c=await (0,p.Px)(m);console.log("\uD83D\uDCE7 Sending room spec notification to admin...");let u={to:"mike@kamunityconsulting.com",subject:`New Focus Room Spec Request - ${n}`,html:function(e,o,t=!1){let i=t?"Focus Room Generator":"Saved Room",r=e.id||"demo";return`
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+  `}({title:n,description:a,roomData:o},!0),from:"Kamunity Demo <demo@kamunity.org>"},m=await (0,p.Px)(c);console.log("\uD83D\uDCE7 Sending room spec notification to admin...");let g={to:"mike@kamunityconsulting.com",subject:`New Focus Room Spec Request - ${n}`,html:function(e,o,t=!1){let i=t?"Focus Room Generator":"Saved Room",r=e.id||"demo",n=new Date().toLocaleString(),a=JSON.stringify({roomId:e.id,title:e.title||e.name,description:e.description||e.purpose,category:e.category,engagement:e.engagement,tags:e.tags,targetAudience:e.targetAudience,completeness:e.completeness,features:e.features,wireframes:e.wireframes,technicalSpecs:e.technicalSpecs,implementation:e.implementation,timeline:e.timeline,budget:e.budget,analytics:e.analytics,userJourney:e.userJourney,timestamp:new Date().toISOString(),sessionData:e.sessionData},null,2);return`
+    <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px;">
       <div style="background: white; border-radius: 8px; padding: 25px; border-left: 4px solid #10b981;">
         
-        <h2 style="color: #10b981; margin: 0 0 20px 0;">New ${i} Request</h2>
-        <p style="color: #64748b; margin: 0 0 25px 0;"><strong>Requested:</strong> ${new Date().toLocaleString()}</p>
+        <h2 style="color: #10b981; margin: 0 0 20px 0;">🎯 New ${i} Request</h2>
+        <p style="color: #64748b; margin: 0 0 25px 0;"><strong>Requested:</strong> ${n}</p>
         
         <!-- User Info -->
         <div style="background: #f8fafc; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
-          <h3 style="color: #334155; margin: 0 0 10px 0; font-size: 16px;">User Information</h3>
+          <h3 style="color: #334155; margin: 0 0 10px 0; font-size: 16px;">👤 User Information</h3>
           <p style="color: #475569; margin: 0;"><strong>Email:</strong> ${o}</p>
           <p style="color: #475569; margin: 5px 0 0 0;"><strong>Source:</strong> ${i}</p>
+          <p style="color: #475569; margin: 5px 0 0 0;"><strong>Session ID:</strong> ${e.sessionId||"N/A"}</p>
         </div>
 
-        <!-- Room Details -->
+        <!-- Room Overview -->
         <div style="background: #f0fdf4; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
-          <h3 style="color: #334155; margin: 0 0 10px 0; font-size: 16px;">Room Specification</h3>
+          <h3 style="color: #334155; margin: 0 0 10px 0; font-size: 16px;">🏠 Room Overview</h3>
           <p style="color: #047857; margin: 0 0 10px 0;"><strong>Title:</strong> ${e.title||e.name}</p>
-          <p style="color: #047857; margin: 0;"><strong>Description:</strong> ${e.description||e.purpose}</p>
+          <p style="color: #047857; margin: 0 0 10px 0;"><strong>Description:</strong> ${e.description||e.purpose}</p>
           ${e.category?`<p style="color: #047857; margin: 5px 0 0 0;"><strong>Category:</strong> ${e.category}</p>`:""}
-          ${e.engagement?`<p style="color: #047857; margin: 5px 0 0 0;"><strong>Engagement:</strong> ${e.engagement}%</p>`:""}
+          ${e.engagement?`<p style="color: #047857; margin: 5px 0 0 0;"><strong>Engagement Score:</strong> ${e.engagement}%</p>`:""}
+          ${e.tags?`<p style="color: #047857; margin: 5px 0 0 0;"><strong>Tags:</strong> ${e.tags.join(", ")}</p>`:""}
         </div>
+
+        <!-- Complete Specification -->
+        <div style="background: #fef7ff; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+          <h3 style="color: #334155; margin: 0 0 15px 0; font-size: 16px;">📋 Complete Implementation Specification</h3>
+          <div style="color: #6b21a8; font-family: monospace; font-size: 12px; background: #f8fafc; padding: 10px; border-radius: 4px; white-space: pre-wrap; max-height: 300px; overflow-y: auto;">
+${a}
+          </div>
+        </div>
+
+        <!-- Technical Requirements -->
+        ${e.technicalRequirements?`
+        <div style="background: #eff6ff; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+          <h3 style="color: #334155; margin: 0 0 10px 0; font-size: 16px;">⚙️ Technical Requirements</h3>
+          <div style="color: #1e40af; font-size: 14px;">
+            ${e.technicalRequirements}
+          </div>
+        </div>
+        `:""}
+
+        <!-- User Analytics -->
+        ${e.analytics?`
+        <div style="background: #fef3c7; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+          <h3 style="color: #334155; margin: 0 0 10px 0; font-size: 16px;">📊 User Analytics</h3>
+          <p style="color: #92400e; margin: 0; font-size: 14px;">
+            <strong>Time Spent:</strong> ${e.analytics.timeSpent||"N/A"}<br>
+            <strong>Interactions:</strong> ${e.analytics.interactions||"N/A"}<br>
+            <strong>Interest Level:</strong> ${e.analytics.interestLevel||"N/A"}
+          </p>
+        </div>
+        `:""}
 
         <!-- Room Access Link -->
         <div style="background: #dbeafe; padding: 15px; border-radius: 6px; text-align: center; margin-bottom: 20px;">
-          <h3 style="color: #1e40af; margin: 0 0 10px 0; font-size: 16px;">🔗 View Complete Specification</h3>
-          <p style="color: #1d4ed8; margin: 0 0 10px 0; font-size: 14px;">Access the room to view full implementation details.</p>
+          <h3 style="color: #1e40af; margin: 0 0 10px 0; font-size: 16px;">🔗 View Live Demo</h3>
+          <p style="color: #1d4ed8; margin: 0 0 10px 0; font-size: 14px;">Access the room to view full implementation details and wireframes.</p>
           <a href="https://kamunitydemo.org/rooms/${r}" style="display: inline-block; background: #3b82f6; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 14px;">
             Open Room & View Specs
           </a>
@@ -160,9 +192,9 @@ ${d}
         <!-- Action Required -->
         <div style="background: #fef3c7; padding: 15px; border-radius: 6px;">
           <p style="color: #92400e; margin: 0; font-weight: bold;">
-            📋 Action Required: Review specification and follow up with user if interested in implementation.
+            📋 Action Required: Review complete specification and follow up with user if interested in implementation.
           </p>
         </div>
       </div>
     </div>
-  `}({title:n,description:a,roomData:o},r||i,!0),from:"Kamunity Demo <demo@kamunity.org>"},g=await (0,p.Px)(u);return console.log("\uD83D\uDCE7 Spec Email Results:",{to:i,room:n,user:{success:c.success,method:c.method},admin:{success:g.success,method:g.method},timestamp:new Date().toISOString()}),s.NextResponse.json({success:!0,message:"Specification emailed successfully",emailStatus:{user:c,admin:g},debug:{timestamp:new Date().toISOString(),resendConfigured:!!process.env.RESEND_API_KEY}})}catch(e){return console.error("Spec email error:",e),s.NextResponse.json({error:"Failed to send specification email"},{status:500})}}let l=new r.AppRouteRouteModule({definition:{kind:n.x.APP_ROUTE,page:"/api/demo/spec-email/route",pathname:"/api/demo/spec-email",filename:"route",bundlePath:"app/api/demo/spec-email/route"},resolvedPagePath:"C:\\dev\\kamunity-final\\src\\app\\api\\demo\\spec-email\\route.ts",nextConfigOutput:"",userland:i}),{requestAsyncStorage:m,staticGenerationAsyncStorage:c,serverHooks:u}=l,g="/api/demo/spec-email/route";function f(){return(0,a.patchFetch)({serverHooks:u,staticGenerationAsyncStorage:c})}}};var o=require("../../../../webpack-runtime.js");o.C(e);var t=e=>o(o.s=e),i=o.X(0,[8948,5972,6743],()=>t(25380));module.exports=i})();
+  `}({title:n,description:a,roomData:o},r||i,!0),from:"Kamunity Demo <demo@kamunity.org>"},u=await (0,p.Px)(g);return console.log("\uD83D\uDCE7 Spec Email Results:",{to:i,room:n,user:{success:m.success,method:m.method},admin:{success:u.success,method:u.method},timestamp:new Date().toISOString()}),s.NextResponse.json({success:!0,message:"Specification emailed successfully",emailStatus:{user:m,admin:u},debug:{timestamp:new Date().toISOString(),resendConfigured:!!process.env.RESEND_API_KEY}})}catch(e){return console.error("Spec email error:",e),s.NextResponse.json({error:"Failed to send specification email"},{status:500})}}let l=new r.AppRouteRouteModule({definition:{kind:n.x.APP_ROUTE,page:"/api/demo/spec-email/route",pathname:"/api/demo/spec-email",filename:"route",bundlePath:"app/api/demo/spec-email/route"},resolvedPagePath:"C:\\dev\\kamunity-final\\src\\app\\api\\demo\\spec-email\\route.ts",nextConfigOutput:"",userland:i}),{requestAsyncStorage:c,staticGenerationAsyncStorage:m,serverHooks:g}=l,u="/api/demo/spec-email/route";function f(){return(0,a.patchFetch)({serverHooks:g,staticGenerationAsyncStorage:m})}}};var o=require("../../../../webpack-runtime.js");o.C(e);var t=e=>o(o.s=e),i=o.X(0,[8948,5972,6743],()=>t(25380));module.exports=i})();

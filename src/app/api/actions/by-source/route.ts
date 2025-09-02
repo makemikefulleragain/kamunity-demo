@@ -9,6 +9,9 @@ import { NextRequest, NextResponse } from 'next/server'
 //   process.env.SUPABASE_SERVICE_ROLE_KEY!
 // )
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic'
+
 // GET /api/actions/by-source - Fetch actions by source context
 export async function GET(request: NextRequest) {
   try {
