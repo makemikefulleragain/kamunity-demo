@@ -52,7 +52,20 @@ export async function POST(request: NextRequest) {
       userEmailResult = await sendUserThankYou(surveyData, analyticsData, timestamp);
       console.log('✅ User thank you email sent');
     } else {
-      console.log('⚠️ No user email provided, skipping user email');
+      // Save survey data to database for admin tracking
+      try {
+        const { HybridStorage } = await import('@/lib/storage/hybrid-storage');
+        await HybridStorage.saveSurvey(surveyData, analyticsData);
+      } catch (error) {
+        console.warn('⚠️ Failed to save survey to database:', error);
+      }
+
+      console.log('📧 Survey submission completed successfully');
+      return NextResponse.json({ 
+        success: true, 
+        message: 'Survey submitted successfully',
+        emailStatus: 'sent'
+      });
     }
 
     return NextResponse.json({ 

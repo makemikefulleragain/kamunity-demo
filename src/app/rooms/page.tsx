@@ -4,49 +4,49 @@ import React, { useState, useEffect } from 'react';
 import { Home } from 'lucide-react';
 import HubPageTemplate from '@/components/demo/HubPageTemplate';
 import ProgressionBadge from '@/components/demo/ProgressionBadge';
+import RoomSpecModal from '@/components/rooms/RoomSpecModal';
 import { Text, Heading } from '@/components/ui';
 import { roomSeeds, RoomItem } from '@/data/roomSeeds';
-import { trackPageView, trackEngagement } from '@/lib/demo/analytics';
-import { memoryStore } from '@/lib/demo/memoryStore';
+import { DemoRoomData } from '@/lib/admin/database';
 
 export default function RoomsPage() {
   const [allRooms, setAllRooms] = useState<RoomItem[]>(roomSeeds);
+  const [selectedRoom, setSelectedRoom] = useState<DemoRoomData | null>(null);
+  const [showSpecModal, setShowSpecModal] = useState(false);
 
-  // Load saved demo rooms from memory store
+  // Load saved demo rooms from hybrid storage
   useEffect(() => {
-    const loadSavedRooms = () => {
-      console.log('Loading saved rooms from memory store...');
+    const loadSavedRooms = async () => {
+      console.log('Loading saved rooms from hybrid storage...');
       
-      // Force refresh from localStorage
-      memoryStore.refresh();
-      
-      const savedRoomKeys = memoryStore.keys().filter(key => key.startsWith('saved-room-'));
-      console.log('Found saved room keys:', savedRoomKeys);
-      
-      const savedRooms = savedRoomKeys.map(key => {
-        const savedRoom = memoryStore.get(key);
-        console.log('Loading saved room:', savedRoom);
-        return {
-          id: savedRoom.id,
-          title: savedRoom.title,
-          description: savedRoom.description,
-          category: savedRoom.category,
-          engagement: savedRoom.engagement,
-          commentCount: savedRoom.commentCount,
-          tags: savedRoom.tags,
-          createdAt: savedRoom.createdAt,
-          demoType: savedRoom.demoType,
-          roomData: savedRoom.roomData,
-          stats: savedRoom.stats
-        };
-      });
+      try {
+        const { HybridStorage } = await import('@/lib/storage/hybrid-storage');
+        const localRooms = HybridStorage.getLocalRooms();
+        
+        const savedRooms = localRooms.map(room => ({
+          id: room.id,
+          title: room.title,
+          description: room.description,
+          category: room.category || 'Saved Demo',
+          engagement: room.engagement || 0,
+          commentCount: 0,
+          tags: room.tags || [],
+          createdAt: room.createdAt,
+          demoType: 'saved-room',
+          roomData: room.roomData,
+          hasDetailedSpec: !!room.roomData
+        }));
 
-      console.log('Processed saved rooms:', savedRooms);
-      
-      // Combine saved rooms with existing room seeds (saved rooms first)
-      const combinedRooms = [...savedRooms, ...roomSeeds];
-      console.log('Combined rooms total:', combinedRooms.length);
-      setAllRooms(combinedRooms);
+        console.log('Processed saved rooms:', savedRooms);
+        
+        // Combine saved rooms with existing room seeds (saved rooms first)
+        const combinedRooms = [...savedRooms, ...roomSeeds];
+        console.log('Combined rooms total:', combinedRooms.length);
+        setAllRooms(combinedRooms);
+      } catch (error) {
+        console.error('Failed to load saved rooms:', error);
+        setAllRooms(roomSeeds);
+      }
     };
 
     // Initial load
@@ -59,29 +59,30 @@ export default function RoomsPage() {
       setTimeout(loadSavedRooms, 100);
     }
     
+    // Listen for room spec modal events
+    const handleViewRoomSpec = (event: CustomEvent) => {
+      const room = event.detail;
+      setSelectedRoom(room);
+      setShowSpecModal(true);
+    };
+    
     // Also listen for storage events in case rooms are saved from other tabs
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'kamunity-demo-store') {
+      if (e.key === 'kamunity_demo_rooms') {
         console.log('Storage change detected, reloading rooms...');
         loadSavedRooms();
       }
     };
     
-    // Listen for focus events to reload when tab becomes active
-    const handleFocus = () => {
-      console.log('Tab focus detected, reloading rooms...');
-      loadSavedRooms();
-    };
-    
+    window.addEventListener('viewRoomSpec', handleViewRoomSpec);
     window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('focus', handleFocus);
     
-    // Set up interval to check for new rooms periodically (reduced frequency)
-    const interval = setInterval(loadSavedRooms, 30000); // Every 30 seconds instead of 3
+    // Set up interval to check for new rooms periodically
+    const interval = setInterval(loadSavedRooms, 30000);
     
     return () => {
+      window.removeEventListener('viewRoomSpec', handleViewRoomSpec);
       window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('focus', handleFocus);
       clearInterval(interval);
     };
   }, []);
@@ -152,6 +153,13 @@ export default function RoomsPage() {
       </div>
     </HubPageTemplate>
     
+    
+    {/* Room Spec Modal */}
+    <RoomSpecModal
+      room={selectedRoom}
+      isOpen={showSpecModal}
+      onClose={() => setShowSpecModal(false)}
+    />
     </>
   );
 }

@@ -52,21 +52,37 @@ export default function GeneratedRoom({ roomData, onBack, onEnhance }: Generated
 
       console.log('Attempting to save room data:', savedRoomData);
 
-      // Import and use memory store
-      const { memoryStore } = await import('@/lib/demo/memoryStore');
+      // Use hybrid storage for localStorage + Supabase
+      const { HybridStorage } = await import('@/lib/storage/hybrid-storage');
       
-      if (!memoryStore) {
-        throw new Error('Memory store not available');
-      }
+      const hybridRoomData = {
+        id: savedRoomData.id,
+        title: savedRoomData.title,
+        description: savedRoomData.description,
+        category: savedRoomData.category || 'Saved Demo',
+        engagement: savedRoomData.engagement,
+        tags: savedRoomData.tags || [],
+        roomData: savedRoomData.roomData,
+        createdAt: savedRoomData.createdAt,
+        source: 'saved' as const,
+        createdBy: 'demo-user',
+        isActive: true
+      };
 
-      memoryStore.set(`saved-room-${savedRoomData.id}`, savedRoomData);
-      console.log('Room saved to memory store');
+      await HybridStorage.saveRoom(hybridRoomData);
+      console.log('Room saved with hybrid storage');
       
       // Track the save event
-      memoryStore.track('demo_room_saved', {
-        roomId: savedRoomData.id,
-        roomName: roomData.name,
-        engagement: stats.engagement
+      await HybridStorage.saveUserTracking({
+        sessionId: `session-${Date.now()}`,
+        action: 'demo_room_saved',
+        page: 'generated-room',
+        timestamp: new Date().toISOString(),
+        metadata: {
+          roomId: savedRoomData.id,
+          roomName: roomData.name,
+          engagement: stats.engagement
+        }
       });
 
       // Show success feedback and trigger banner

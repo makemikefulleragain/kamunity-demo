@@ -284,3 +284,49 @@ model ActionActivity {
   @@index([userId])
   @@index([activityType])
 }
+
+// Admin Room Management Tables
+model DemoRoom {
+  id            String   @id @default(cuid())
+  title         String
+  description   String?
+  category      String?
+  engagement    Int?
+  tags          String[]
+  createdBy     String   // user email
+  specification Json?    // full room spec data
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  isActive      Boolean  @default(true)
+
+  @@index([createdBy])
+  @@index([createdAt])
+  @@index([isActive])
+}
+
+model DemoSurvey {
+  id            String   @id @default(cuid())
+  userEmail     String?
+  responses     Json     // survey responses
+  analytics     Json?    // user analytics data
+  sessionId     String
+  createdAt     DateTime @default(now())
+
+  @@index([userEmail])
+  @@index([sessionId])
+  @@index([createdAt])
+}
+
+model DemoUserTracking {
+  id        String   @id @default(cuid())
+  sessionId String
+  userEmail String?
+  actions   Json     // array of user actions
+  metadata  Json?    // additional tracking data
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sessionId])
+  @@index([userEmail])
+  @@index([createdAt])
+}

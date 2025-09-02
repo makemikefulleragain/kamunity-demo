@@ -43,6 +43,8 @@ interface HubPageTemplateProps {
     promotionStatus?: 'eligible' | 'promoted' | 'none';
     promotionTarget?: string;
     demoType?: string;
+    hasDetailedSpec?: boolean;
+    roomData?: any;
   }>;
   endMessage: {
     title: string;
@@ -225,22 +227,45 @@ const HubPageTemplate: React.FC<HubPageTemplateProps> = ({
                     </div>
                   )}
 
-                  {/* Tags and Date */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex flex-wrap gap-1">
-                      {card.tags.slice(0, 2).map((tag) => (
-                        <span key={tag} className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
-                          #{tag}
-                        </span>
-                      ))}
+                  {/* Tags, Date, and Spec Button */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex flex-wrap gap-1">
+                        {card.tags.slice(0, 2).map((tag) => (
+                          <span key={tag} className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
+                            #{tag}
+                          </span>
+                        ))}
+                        {card.hasDetailedSpec && (
+                          <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs rounded font-medium">
+                            📋 Full Spec
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {new Date(card.createdAt).toLocaleDateString('en-AU', {
+                          day: '2-digit',
+                          month: '2-digit', 
+                          year: 'numeric'
+                        })}
+                      </div>
                     </div>
-                    <div className="text-xs text-gray-500">
-                      {new Date(card.createdAt).toLocaleDateString('en-AU', {
-                        day: '2-digit',
-                        month: '2-digit', 
-                        year: 'numeric'
-                      })}
-                    </div>
+                    
+                    {/* View Spec Button for rooms with detailed specs */}
+                    {card.hasDetailedSpec && (
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          // This will be handled by the parent component
+                          const event = new CustomEvent('viewRoomSpec', { detail: card });
+                          window.dispatchEvent(event);
+                        }}
+                        className="w-full px-3 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-colors text-sm font-medium"
+                      >
+                        📋 View Full Specification
+                      </button>
+                    )}
                   </div>
                   </CardContent>
                 </Card>

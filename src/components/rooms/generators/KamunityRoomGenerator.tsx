@@ -534,8 +534,32 @@ export default function KamunityRoomGenerator({ onComplete, onCancel }: Kamunity
             
             <div className="flex gap-4 justify-center">
               <button
-                onClick={() => {
+                onClick={async () => {
                   console.log('🔘 Email Specification button clicked!');
+                  
+                  // Save room to hybrid storage first
+                  try {
+                    const { HybridStorage } = await import('@/lib/storage/hybrid-storage');
+                    const roomData = {
+                      id: `focus-room-${Date.now()}`,
+                      title: generatedSpec.title || 'Focus Room',
+                      description: generatedSpec.description || 'Generated focus room',
+                      category: 'Focus Room Generator',
+                      engagement: 85,
+                      tags: generatedSpec.tags || ['focus', 'generator'],
+                      roomData: generatedSpec.detailedSpec,
+                      createdAt: new Date().toISOString(),
+                      source: 'generator' as const,
+                      createdBy: 'demo-user',
+                      isActive: true
+                    };
+                    
+                    await HybridStorage.saveRoom(roomData);
+                    console.log('✅ Focus room saved to hybrid storage');
+                  } catch (error) {
+                    console.warn('⚠️ Failed to save focus room:', error);
+                  }
+                  
                   setCurrentStep('email');
                 }}
                 className="px-6 py-3 border border-green-600 text-green-600 rounded-lg hover:bg-green-50 transition-all flex items-center gap-2"
