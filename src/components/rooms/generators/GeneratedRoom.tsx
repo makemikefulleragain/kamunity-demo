@@ -2,17 +2,22 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { ArrowLeft, Users, MessageSquare, Activity, Bot, Play, Pause, TrendingUp, Target, Calendar, FileText } from 'lucide-react';
-import { UnifiedRoomData } from './shared/types';
 
 interface GeneratedRoomProps {
-  roomData: UnifiedRoomData;
-  onBack: () => void;
-  onEnhance: () => void;
+  roomData: {
+    name?: string;
+    purpose?: string;
+    targetAudience?: string;
+    tools?: string[];
+    completeness: number;
+    [key: string]: unknown;
+  };
+  onBack?: () => void;
 }
 
-export default function GeneratedRoom({ roomData, onBack, onEnhance }: GeneratedRoomProps) {
+export default function GeneratedRoom({ roomData, onBack }: GeneratedRoomProps) {
   const [isPlaying, setIsPlaying] = useState(true);
-  const [messages, setMessages] = useState<Array<{id: number, user: string, message: string, time: string, avatar: string}>>([]);
+  const [messages, setMessages] = useState<Array<{id: number, user: string, avatar: string, content: string, timestamp: string, reactions: number}>>([]);
   const [, setActivities] = useState<Array<{id: number, user: string, action: string, time: string}>>([]);
   const [showSavedBanner, setShowSavedBanner] = useState(false);
   const [stats, setStats] = useState({
@@ -47,51 +52,31 @@ export default function GeneratedRoom({ roomData, onBack, onEnhance }: Generated
         createdAt: new Date().toISOString(),
         demoType: 'saved-focus-room',
         roomData: roomData,
-        stats: stats
-      };
-
-      console.log('Attempting to save room data:', savedRoomData);
-
-      // Use hybrid storage for localStorage + Supabase
-      const { HybridStorage } = await import('@/lib/storage/hybrid-storage');
-      
-      const hybridRoomData = {
-        id: savedRoomData.id,
-        title: savedRoomData.title,
-        description: savedRoomData.description,
-        category: savedRoomData.category || 'Saved Demo',
-        engagement: savedRoomData.engagement,
-        tags: savedRoomData.tags || [],
-        roomData: savedRoomData.roomData,
-        createdAt: savedRoomData.createdAt,
-        source: 'saved' as const,
-        createdBy: 'demo-user',
-        isActive: true
-      };
-
-      await HybridStorage.saveRoom(hybridRoomData);
-      console.log('Room saved with hybrid storage');
-      
-      // Track the save event
-      await HybridStorage.saveUserTracking({
-        sessionId: 'session-' + Date.now(),
-        action: 'demo_room_saved',
-        page: 'generated-room',
-        timestamp: new Date().toISOString(),
-        metadata: {
-          roomId: savedRoomData.id,
-          roomName: roomData.name,
-          engagement: stats.engagement
+        stats: stats,
+        analytics: {
+          timeSpent: '5-10 minutes',
+          interactions: Math.floor(Math.random() * 20) + 5,
+          interestLevel: 'High'
         }
-      });
+      };
+
+      console.log('Attempting to save room data locally:', savedRoomData);
+
+      // Save to localStorage only (no database dependencies)
+      try {
+        const existingRooms = JSON.parse(localStorage.getItem('savedDemoRooms') || '[]');
+        existingRooms.push(savedRoomData);
+        localStorage.setItem('savedDemoRooms', JSON.stringify(existingRooms));
+        console.log('Room saved to localStorage successfully');
+      } catch (localError) {
+        console.warn('Failed to save to localStorage:', localError);
+      }
 
       // Show success feedback and trigger banner
       console.log('SUCCESS: Room saved successfully!', savedRoomData);
-      
-      // Show the saved banner in the current room
       setShowSavedBanner(true);
       
-      // Send email with room spec
+      // Send email with room specification
       try {
         console.log('Sending room spec email request:', { 
           roomName: roomData.name,
@@ -111,39 +96,17 @@ export default function GeneratedRoom({ roomData, onBack, onEnhance }: Generated
         
         if (emailResponse.ok) {
           console.log('Room spec email sent successfully');
+          alert('Room saved locally and specification emailed successfully!');
         } else {
           console.warn('Email API response not OK:', emailResponse.status);
-        }
-
-        // Save to admin database for tracking
-        try {
-          await fetch('/api/admin/room-specs', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              roomData: {
-                ...roomData,
-                sessionId: 'session_' + Date.now(),
-                analytics: {
-                  timeSpent: '5-10 minutes',
-                  interactions: Math.floor(Math.random() * 20) + 5,
-                  interestLevel: 'High'
-                }
-              },
-              userEmail: 'mike@kamunityconsulting.com',
-              sessionId: 'session_' + Date.now(),
-              sourceType: 'generator'
-            })
-          });
-        } catch (adminError) {
-          console.warn('Failed to save to admin database:', adminError);
+          alert('Room saved locally, but email sending failed. Please contact support.');
         }
         
-      } catch (error) {
-        console.error('Error saving demo room:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-        alert('Failed to save demo room: ' + errorMessage + '\n\nPlease try again.');
+      } catch (emailError) {
+        console.error('Error sending email:', emailError);
+        alert('Room saved locally, but email sending failed. Please contact support.');
       }
+      
     } catch (error) {
       console.error('Error saving demo room:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
@@ -153,24 +116,25 @@ export default function GeneratedRoom({ roomData, onBack, onEnhance }: Generated
 
   // Determine simulation intensity based on completeness
   const getSimulationConfig = () => {
-    if (roomData.completeness >= 90) {
+    const completeness = roomData.completeness || 0;
+    if (completeness >= 90) {
       return {
-        messageFrequency: 5000,
-        activityFrequency: 8000,
-        statsVariation: 5,
-        features: 'comprehensive'
-      };
-    } else if (roomData.completeness >= 75) {
-      return {
-        messageFrequency: 15000,
-        activityFrequency: 20000,
+        messageFrequency: 2000,
+        activityFrequency: 4000,
         statsVariation: 3,
-        features: 'balanced'
+        features: 'premium'
+      };
+    } else if (completeness >= 70) {
+      return {
+        messageFrequency: 3000,
+        activityFrequency: 5000,
+        statsVariation: 2,
+        features: 'enhanced'
       };
     } else {
       return {
-        messageFrequency: 30000,
-        activityFrequency: 40000,
+        messageFrequency: 4000,
+        activityFrequency: 6000,
         statsVariation: 2,
         features: 'fast'
       };
@@ -179,45 +143,55 @@ export default function GeneratedRoom({ roomData, onBack, onEnhance }: Generated
 
   const config = getSimulationConfig();
 
-  // Generate contextual messages based on room data and target audience
-  const generateMessage = useCallback(() => {
-    const users = generateContextualUsers();
-    const templates = getMessageTemplates();
-    
-    const user = users[Math.floor(Math.random() * users.length)];
-    const template = templates[Math.floor(Math.random() * templates.length)];
-    const message = template
-      .replace('{purpose}', roomData.purpose || 'our goals')
-      .replace('{targetGroup}', roomData.targetAudience || 'team')
-      .replace('{goal}', roomData.expectedOutcomes?.[0] || 'success');
-    
-    return {
-      id: Date.now(),
-      user,
-      message,
-      time: 'just now',
-      avatar: user[0]
-    };
-  }, [roomData.targetAudience, roomData.purpose, roomData.expectedOutcomes]);
-
   // Generate user names based on target audience
-  const generateContextualUsers = () => {
+  const generateContextualUsers = useCallback(() => {
     const targetGroup = roomData.targetAudience?.toLowerCase() || '';
     
     if (targetGroup.includes('startup') || targetGroup.includes('founder')) {
-      return ['Alex Chen (CEO)', 'Sarah Kim (CTO)', 'Marcus Rodriguez (CMO)', 'Emily Wang (CPO)', 'David Park (COO)'];
+      return [
+        { name: 'Alex Chen (CEO)', avatar: 'A' },
+        { name: 'Sarah Kim (CTO)', avatar: 'S' },
+        { name: 'Marcus Rodriguez (CMO)', avatar: 'M' },
+        { name: 'Emily Wang (CPO)', avatar: 'E' },
+        { name: 'David Park (COO)', avatar: 'D' }
+      ];
     } else if (targetGroup.includes('marketing') || targetGroup.includes('brand')) {
-      return ['Jessica Brand', 'Michael Creative', 'Lisa Campaign', 'Tom Analytics', 'Nina Social'];
+      return [
+        { name: 'Jessica Brand', avatar: 'J' },
+        { name: 'Michael Creative', avatar: 'M' },
+        { name: 'Lisa Campaign', avatar: 'L' },
+        { name: 'Tom Analytics', avatar: 'T' },
+        { name: 'Nina Social', avatar: 'N' }
+      ];
     } else if (targetGroup.includes('developer') || targetGroup.includes('tech')) {
-      return ['Alex.dev', 'Sarah_codes', 'Marcus.js', 'Emily.py', 'David.react'];
+      return [
+        { name: 'Alex.dev', avatar: 'A' },
+        { name: 'Sarah_codes', avatar: 'S' },
+        { name: 'Marcus.js', avatar: 'M' },
+        { name: 'Emily.py', avatar: 'E' },
+        { name: 'David.react', avatar: 'D' }
+      ];
     } else if (targetGroup.includes('student') || targetGroup.includes('education')) {
-      return ['Alex (Year 3)', 'Sarah M.', 'Marcus T.', 'Emily R.', 'David K.'];
+      return [
+        { name: 'Alex (Year 3)', avatar: 'A' },
+        { name: 'Sarah M.', avatar: 'S' },
+        { name: 'Marcus T.', avatar: 'M' },
+        { name: 'Emily R.', avatar: 'E' },
+        { name: 'David K.', avatar: 'D' }
+      ];
     }
     
-    return ['Sarah Chen', 'Marcus Johnson', 'Emily Rodriguez', 'David Kim', 'Lisa Wang', 'Alex Turner'];
-  };
+    return [
+      { name: 'Sarah Chen', avatar: 'S' },
+      { name: 'Marcus Johnson', avatar: 'M' },
+      { name: 'Emily Rodriguez', avatar: 'E' },
+      { name: 'David Kim', avatar: 'D' },
+      { name: 'Lisa Wang', avatar: 'L' },
+      { name: 'Alex Turner', avatar: 'A' }
+    ];
+  }, [roomData.targetAudience]);
 
-  const getMessageTemplates = () => {
+  const getMessageTemplates = useCallback(() => {
     const targetGroup = roomData.targetAudience?.toLowerCase() || '';
     
     // Context-aware message templates
@@ -242,7 +216,27 @@ export default function GeneratedRoom({ roomData, onBack, onEnhance }: Generated
     }
     
     return templates;
-  };
+  }, [roomData.targetAudience, roomData.purpose]);
+
+  // Generate contextual messages based on room data and target audience
+  const generateMessage = useCallback(() => {
+    const templates = getMessageTemplates();
+    const users = generateContextualUsers();
+    
+    if (templates.length === 0 || users.length === 0) return null;
+    
+    const template = templates[Math.floor(Math.random() * templates.length)];
+    const user = users[Math.floor(Math.random() * users.length)];
+    
+    return {
+      id: Date.now() + Math.random(),
+      user: user.name,
+      avatar: user.avatar,
+      content: template,
+      timestamp: new Date(Date.now() - Math.random() * 3600000).toLocaleTimeString(),
+      reactions: Math.floor(Math.random() * 8)
+    };
+  }, [getMessageTemplates, generateContextualUsers]);
 
   // Generate activities based on room features
   const generateActivity = useCallback(() => {
@@ -410,27 +404,34 @@ export default function GeneratedRoom({ roomData, onBack, onEnhance }: Generated
   useEffect(() => {
     if (!isPlaying) return;
 
-    const timer = setInterval(() => {
-      // Simulation timer for activity updates
-    }, 1000);
-
-    return () => clearInterval(timer);
+    const timer = setTimeout(() => {
+      setShowSavedBanner(false);
+    }, 5000);
+    return () => clearTimeout(timer);
   }, [isPlaying]);
 
   useEffect(() => {
-    if (!isPlaying) return;
+    const interval = setInterval(() => {
+      if (Math.random() > 0.7) {
+        const newMessage = generateMessage();
+        if (newMessage) {
+          setMessages(prev => [...prev.slice(-9), newMessage]);
+        }
+      }
+      
+      if (Math.random() > 0.8) {
+        const newActivity = generateActivity();
+        if (newActivity) {
+          setActivities(prev => [...prev.slice(-4), newActivity]);
+        }
+      }
+    }, 3000);
+    
+    return () => clearInterval(interval);
+  }, [generateMessage, generateActivity]);
 
-    // Message generation
-    const messageTimer = setInterval(() => {
-      setMessages(prev => [generateMessage(), ...prev.slice(0, 9)]);
-    }, config.messageFrequency);
-
-    // Activity generation
-    const activityTimer = setInterval(() => {
-      setActivities(prev => [generateActivity(), ...prev.slice(0, 6)]);
-    }, config.activityFrequency);
-
-    // Stats updates with dynamic calculation
+  // Stats updates with dynamic calculation
+  useEffect(() => {
     const statsTimer = setInterval(() => {
       const targetGroup = roomData.targetAudience?.toLowerCase() || '';
       let memberMultiplier = 1;
@@ -463,23 +464,17 @@ export default function GeneratedRoom({ roomData, onBack, onEnhance }: Generated
       }));
     }, 3000);
 
-    return () => {
-      clearInterval(messageTimer);
-      clearInterval(activityTimer);
-      clearInterval(statsTimer);
-    };
-  }, [isPlaying, config.messageFrequency, config.activityFrequency, config.statsVariation]);
+    return () => clearInterval(statsTimer);
+  }, [config.statsVariation, roomData.targetAudience]);
 
   // Initialize with some messages and activities
   useEffect(() => {
-    const initialMessages = Array.from({ length: 5 }, () => generateMessage());
+    const initialMessages = Array.from({ length: 5 }, () => generateMessage()).filter(Boolean) as Array<{id: number, user: string, avatar: string, content: string, timestamp: string, reactions: number}>;
     const initialActivities = Array.from({ length: 4 }, () => generateActivity());
     setMessages(initialMessages);
     setActivities(initialActivities);
-  }, []);
+  }, [generateMessage, generateActivity]);
 
-  const showEnhancedFeatures = roomData.completeness >= 75;
-  const showAdvancedFeatures = roomData.completeness >= 90;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -489,7 +484,7 @@ export default function GeneratedRoom({ roomData, onBack, onEnhance }: Generated
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-6">
               <button
-                onClick={onBack}
+                onClick={() => onBack?.()}
                 className="text-blue-600 hover:text-blue-700 flex items-center gap-2"
               >
                 <ArrowLeft className="w-4 h-4" />
@@ -556,9 +551,7 @@ export default function GeneratedRoom({ roomData, onBack, onEnhance }: Generated
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
                 <span className="text-sm font-medium text-gray-700">Live Activity</span>
               </div>
-              <span className="text-sm text-gray-600">
-                Last: &ldquo;{messages[0]?.message?.substring(0, 30) || 'Welcome to the room'}&rdquo;... - {messages[0]?.user || 'Team'}
-              </span>
+              <span className="text-sm text-gray-600">&ldquo;This room perfectly matches what I was looking for!&rdquo;</span>
             </div>
             <button
               onClick={() => setIsPlaying(!isPlaying)}
@@ -570,7 +563,6 @@ export default function GeneratedRoom({ roomData, onBack, onEnhance }: Generated
           </div>
         </div>
       </div>
-
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-6">
@@ -607,9 +599,9 @@ export default function GeneratedRoom({ roomData, onBack, onEnhance }: Generated
                     <div className="flex-1">
                       <div className="flex items-baseline gap-2">
                         <span className="font-medium text-gray-900">{msg.user}</span>
-                        <span className="text-xs text-gray-500">{msg.time}</span>
+                        <span className="text-xs text-gray-500">{msg.timestamp}</span>
                       </div>
-                      <p className="text-gray-700 mt-1">{msg.message}</p>
+                      <p className="text-gray-700 mt-1">{msg.content}</p>
                     </div>
                   </div>
                 ))}
@@ -638,7 +630,7 @@ export default function GeneratedRoom({ roomData, onBack, onEnhance }: Generated
                 />
               )}
               
-              {roomData.completeness < 90 && (
+              {(roomData.completeness || 0) >= 80 && (
                 <AIInsight 
                   type="prediction"
                   title="Growth Forecast"
