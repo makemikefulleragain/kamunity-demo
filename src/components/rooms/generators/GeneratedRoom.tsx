@@ -47,32 +47,22 @@ export default function GeneratedRoom({ roomData, onBack }: GeneratedRoomProps) 
         description: roomData.purpose || 'A saved demo room from the Focus Room Generator',
         category: 'Saved Demo',
         engagement: stats.engagement,
-        commentCount: stats.messages,
+        memberCount: stats.members,
         tags: ['demo', 'saved', 'focus-room', ...(roomData.tools?.slice(0, 2) || [])],
-        createdAt: new Date().toISOString(),
-        demoType: 'saved-focus-room',
         roomData: roomData,
-        stats: stats,
-        analytics: {
-          timeSpent: '5-10 minutes',
-          interactions: Math.floor(Math.random() * 20) + 5,
-          interestLevel: 'High'
-        }
+        userEmail: 'mike@kamunityconsulting.com',
+        createdAt: new Date().toISOString(),
+        source: 'generator' as const,
+        createdBy: 'demo-user',
+        isActive: true
       };
 
-      console.log('Attempting to save room data locally:', savedRoomData);
+      console.log('Attempting to save room via HybridStorage:', savedRoomData);
 
-      // Save to localStorage only (no database dependencies)
-      try {
-        const existingRooms = JSON.parse(localStorage.getItem('savedDemoRooms') || '[]');
-        existingRooms.push(savedRoomData);
-        localStorage.setItem('savedDemoRooms', JSON.stringify(existingRooms));
-        console.log('Room saved to localStorage successfully');
-      } catch (localError) {
-        console.warn('Failed to save to localStorage:', localError);
-      }
-
-      // Show success feedback and trigger banner
+      // Use HybridStorage for proper save functionality
+      const { HybridStorage } = await import('@/lib/storage/hybrid-storage');
+      await HybridStorage.saveRoom(savedRoomData);
+      
       console.log('SUCCESS: Room saved successfully!', savedRoomData);
       setShowSavedBanner(true);
       
@@ -96,15 +86,15 @@ export default function GeneratedRoom({ roomData, onBack }: GeneratedRoomProps) 
         
         if (emailResponse.ok) {
           console.log('Room spec email sent successfully');
-          alert('Room saved locally and specification emailed successfully!');
+          alert('Room saved and specification emailed successfully!');
         } else {
           console.warn('Email API response not OK:', emailResponse.status);
-          alert('Room saved locally, but email sending failed. Please contact support.');
+          alert('Room saved, but email sending failed. Please contact support.');
         }
         
       } catch (emailError) {
         console.error('Error sending email:', emailError);
-        alert('Room saved locally, but email sending failed. Please contact support.');
+        alert('Room saved, but email sending failed. Please contact support.');
       }
       
     } catch (error) {
