@@ -1,6 +1,6 @@
 "use client";
 
-import { AdminDatabase } from '@/lib/admin/database';
+// Import removed to prevent client-side Supabase service role usage
 
 export interface RoomData {
   id: string;
@@ -32,15 +32,23 @@ export class HybridStorage {
         console.log('✅ Room saved to localStorage:', roomData.id);
       }
 
-      // Also save to Supabase for admin access
+      // Save to Supabase via API route to avoid client-side service role usage
       try {
-        const supabaseData = {
-          ...roomData,
-          tags: roomData.tags || [],
-          specification: roomData.roomData
-        };
-        await AdminDatabase.saveRoom(supabaseData);
-        console.log('✅ Room synced to Supabase:', roomData.id);
+        const response = await fetch('/api/rooms', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...roomData,
+            tags: roomData.tags || [],
+            specification: roomData.roomData
+          })
+        });
+        
+        if (response.ok) {
+          console.log('✅ Room synced to Supabase:', roomData.id);
+        } else {
+          console.warn('⚠️ Failed to sync room to Supabase (localStorage still saved)');
+        }
       } catch (error) {
         console.warn('⚠️ Failed to sync room to Supabase (localStorage still saved):', error);
       }
@@ -80,10 +88,17 @@ export class HybridStorage {
         console.log('✅ Room removed from localStorage:', roomId);
       }
 
-      // Also remove from Supabase
+      // Remove from Supabase via API route
       try {
-        await AdminDatabase.deleteRoom(roomId);
-        console.log('✅ Room deleted from Supabase:', roomId);
+        const response = await fetch(`/api/rooms/${roomId}`, {
+          method: 'DELETE'
+        });
+        
+        if (response.ok) {
+          console.log('✅ Room deleted from Supabase:', roomId);
+        } else {
+          console.warn('⚠️ Failed to delete room from Supabase');
+        }
       } catch (error) {
         console.warn('⚠️ Failed to delete room from Supabase:', error);
       }
@@ -102,13 +117,21 @@ export class HybridStorage {
     
     for (const room of localRooms) {
       try {
-        const supabaseData = {
-          ...room,
-          tags: room.tags || [],
-          specification: room.roomData
-        };
-        await AdminDatabase.saveRoom(supabaseData);
-        console.log('✅ Synced room to Supabase:', room.id);
+        const response = await fetch('/api/rooms', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...room,
+            tags: room.tags || [],
+            specification: room.roomData
+          })
+        });
+        
+        if (response.ok) {
+          console.log('✅ Synced room to Supabase:', room.id);
+        } else {
+          console.warn('⚠️ Failed to sync room:', room.id);
+        }
       } catch (error) {
         console.warn('⚠️ Failed to sync room:', room.id, error);
       }
@@ -127,19 +150,27 @@ export class HybridStorage {
     metadata?: Record<string, any>;
   }): Promise<void> {
     try {
-      const trackingData = {
-        sessionId: data.sessionId,
-        userEmail: data.userEmail,
-        actions: [{
-          action: data.action,
-          page: data.page,
-          timestamp: data.timestamp,
+      const response = await fetch('/api/admin/user-activities', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: data.sessionId,
+          userEmail: data.userEmail,
+          actions: [{
+            action: data.action,
+            page: data.page,
+            timestamp: data.timestamp,
+            metadata: data.metadata
+          }],
           metadata: data.metadata
-        }],
-        metadata: data.metadata
-      };
-      await AdminDatabase.saveUserTracking(trackingData);
-      console.log('✅ User tracking saved:', data.action);
+        })
+      });
+      
+      if (response.ok) {
+        console.log('✅ User tracking saved:', data.action);
+      } else {
+        console.warn('⚠️ Failed to save user tracking');
+      }
     } catch (error) {
       console.warn('⚠️ Failed to save user tracking:', error);
     }
@@ -148,16 +179,23 @@ export class HybridStorage {
   // Save survey response
   static async saveSurvey(surveyData: Record<string, any>, analyticsData: Record<string, any>): Promise<void> {
     try {
-      const data = {
-        userEmail: surveyData.email,
-        responses: surveyData,
-        analytics: analyticsData,
-        sessionId: `session-${Date.now()}`,
-        submittedAt: new Date().toISOString()
-      };
+      const response = await fetch('/api/demo/survey', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userEmail: surveyData.email,
+          responses: surveyData,
+          analytics: analyticsData,
+          sessionId: `session-${Date.now()}`,
+          submittedAt: new Date().toISOString()
+        })
+      });
       
-      await AdminDatabase.saveSurvey(data);
-      console.log('✅ Survey saved to database');
+      if (response.ok) {
+        console.log('✅ Survey saved to database');
+      } else {
+        console.warn('⚠️ Failed to save survey');
+      }
     } catch (error) {
       console.warn('⚠️ Failed to save survey:', error);
     }

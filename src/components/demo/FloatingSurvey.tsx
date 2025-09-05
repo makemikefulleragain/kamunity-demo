@@ -49,24 +49,21 @@ const FloatingSurvey: React.FC<FloatingSurveyProps> = ({
     roomIdeas: ''
   });
 
-  // Enhanced timer management for recurring surveys
+  // Enhanced timer management for recurring surveys with proper state handling
   useEffect(() => {
-    console.log('🎯 FloatingSurvey useEffect triggered - initializing survey state');
+    let timeoutId: NodeJS.Timeout | null = null;
+    let intervalId: NodeJS.Timeout | null = null;
     
     const loadSurveyState = () => {
       try {
         const stored = localStorage.getItem('kamunity_survey_state');
         if (stored) {
           const { state, nextTrigger } = JSON.parse(stored);
-          console.log('📋 Loaded survey state from localStorage:', { state, nextTrigger });
-          setSurveyState(state);
-          setNextTriggerTime(nextTrigger);
           return { state, nextTrigger };
         }
       } catch (error) {
         console.warn('Failed to load survey state:', error);
       }
-      console.log('📋 No stored survey state found, using defaults');
       return { state: 'never_shown', nextTrigger: null };
     };
 
@@ -83,53 +80,59 @@ const FloatingSurvey: React.FC<FloatingSurveyProps> = ({
       }
     };
 
-    const checkAndTriggerSurvey = () => {
+    const initializeSurvey = () => {
       const { state, nextTrigger } = loadSurveyState();
       const now = Date.now();
 
-      console.log('🔍 Survey state check:', { 
-        state, 
-        nextTrigger, 
-        now, 
-        isVisible, 
-        timeUntilTrigger: nextTrigger ? nextTrigger - now : 'N/A' 
-      });
+      // Only log state changes to reduce console spam
+      if (surveyState !== state) {
+        console.log('🔍 Survey state change:', { 
+          from: surveyState,
+          to: state, 
+          nextTrigger, 
+          isVisible,
+          timeUntilTrigger: nextTrigger ? nextTrigger - now : 'N/A' 
+        });
+      }
 
       if (state === 'never_shown' && !isVisible) {
-        console.log(`⏰ Setting first timer for ${triggerDelay}ms`);
-        setTimeout(() => {
-          console.log('🎯 First survey trigger!');
+        timeoutId = setTimeout(() => {
           setIsVisible(true);
           saveSurveyState('visible');
         }, triggerDelay);
       } else if (state === 'waiting_for_next' && nextTrigger && now >= nextTrigger && !isVisible) {
-        console.log('🎯 Recurring survey trigger (time reached)!');
         setIsVisible(true);
         saveSurveyState('visible');
       } else if (state === 'waiting_for_next' && nextTrigger && now < nextTrigger && !isVisible) {
         const remainingTime = nextTrigger - now;
-        console.log(`⏰ Setting recurring timer for ${remainingTime}ms`);
-        setTimeout(() => {
-          console.log('🎯 Recurring survey trigger!');
+        timeoutId = setTimeout(() => {
           setIsVisible(true);
           saveSurveyState('visible');
         }, remainingTime);
       } else if (state === 'visible' && !isVisible) {
-        console.log('🎯 Survey should be visible but isVisible is false - showing now');
         setIsVisible(true);
       }
+      
+      setSurveyState(state);
+      setNextTriggerTime(nextTrigger);
     };
 
-    // Initial check
-    checkAndTriggerSurvey();
+    // Initialize survey state
+    initializeSurvey();
 
-    // Poll every 5 seconds to check for state changes
-    const pollInterval = setInterval(checkAndTriggerSurvey, 5000);
+    // Check for state changes every 10 seconds (reduced frequency)
+    intervalId = setInterval(() => {
+      const { state } = loadSurveyState();
+      if (state !== surveyState) {
+        initializeSurvey();
+      }
+    }, 10000);
 
     return () => {
-      clearInterval(pollInterval);
+      if (timeoutId) clearTimeout(timeoutId);
+      if (intervalId) clearInterval(intervalId);
     };
-  }, [triggerDelay, recurringInterval, isVisible]);
+  }, [triggerDelay, recurringInterval, surveyState]); // Removed isVisible from dependencies
 
   const handleInputChange = (field: keyof SurveyData, value: string) => {
     setSurveyData(prev => ({ ...prev, [field]: value }));
@@ -142,7 +145,10 @@ const FloatingSurvey: React.FC<FloatingSurveyProps> = ({
       engagementLevel: 'low'
     });
 
-    // Schedule next survey appearance
+    // Hide survey and schedule next appearance
+    setIsVisible(false);
+    setIsExpanded(false);
+    
     const nextTrigger = Date.now() + recurringInterval;
     try {
       localStorage.setItem('kamunity_survey_state', JSON.stringify({
