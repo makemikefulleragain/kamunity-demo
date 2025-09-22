@@ -119,7 +119,7 @@ const WelcomePage = () => {
         
         <Container className="relative z-10">
           <Flex direction="col" align="center" justify="center" className="text-center py-12">
-            <Heading level={1} variant="display" className="text-gray-800 mb-6 max-w-3xl">
+            <Heading level={1} variant="display" className="text-blue-600 mb-6 max-w-3xl">
               Welcome to Kamunity - What&apos;s Your Perspective?
             </Heading>
             
